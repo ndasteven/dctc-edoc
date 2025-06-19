@@ -224,7 +224,6 @@ class FolderManager extends Component
                         'verrouille'=>false,
                         'code_verrou'=>''
                     ]);
-                    $this->getIds($verrou->id,'file');
                      // Journalisation pour dévérouillage
                     ActivityLog::create([
                         'action' => ' Fichiers dévérrouiller',
@@ -245,7 +244,6 @@ class FolderManager extends Component
                 'verrouille' => true   ,
                 'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
                 ]);
-                $this->getIds($verrou->id,'file');
                 //journalisation pour vérouillage
                 ActivityLog::create([
                     'action' => '✅ Fichiers vérrouiller',
@@ -267,7 +265,6 @@ class FolderManager extends Component
                         'verrouille'=>false,
                         'code_verrou'=>''
                     ]);
-                    $this->getIds($verrou->id,'folder');
                      // Journalisation pour dévérouillage
                     ActivityLog::create([
                         'action' => ' Dossier dévérrouiller',
@@ -288,7 +285,6 @@ class FolderManager extends Component
                 'verrouille' => true   ,
                 'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
                 ]);
-                $this->getIds($verrou->id,'folder');
                 //journalisation pour vérouillage
                 ActivityLog::create([
                     'action' => '✅ Dossier vérrouiller',
@@ -355,10 +351,7 @@ class FolderManager extends Component
             'confidentiel' => $this->confidence,
         ]);
         }
-        if(count($this->files)>0){
-         $this->dispatch('file_create');   
-        }
-        
+        $this->dispatch('file_create');
         $this->files =[];
         $this->compteFileSelected=0;
         $this->mot_cle="";
@@ -393,7 +386,6 @@ class FolderManager extends Component
     public $idClickPropriete;
     public $docClickPropriete;
     public $infoPropriete;
-
      public function getIds($id, $doc){
         if($doc==='folder'){
             $this->idClickPropriete=$id;
@@ -456,10 +448,10 @@ class FolderManager extends Component
         }else{
             $SessionServiceinfo="";
         }
-        $infoProprietes=
+        //$infoPropriete=$this->infoPropriete;
         
         $fichiers = Document::where('folder_id', $this->parentId)->get();
         
-        return view('livewire.folder-manager', compact('folders', 'fichiers','SessionServiceinfo','infoProprietes'));
+        return view('livewire.folder-manager', compact('folders', 'fichiers','SessionServiceinfo'));
     }
 }

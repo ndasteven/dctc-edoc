@@ -238,9 +238,11 @@ Route::post('/api/folder/{folder}/permissions', function (Request $request, Fold
 
 
 
-// routes/web.php
-
 use App\Http\Controllers\PermissionController;
 
-// Route pour sauvegarder les permissions via AJAX
-Route::post('/api/folder/{folder}/permissions', [PermissionController::class, 'update']);
+
+Route::prefix('folder/{folder}')->group(function () {
+    Route::get('/permissions', [PermissionController::class, 'edit'])->name('folder.permissions.edit');
+    Route::post('/permissions', [PermissionController::class, 'update'])->name('folder.permissions.update');
+    Route::get('/permissions/data', [PermissionController::class, 'show']); // Pour AJAX
+});

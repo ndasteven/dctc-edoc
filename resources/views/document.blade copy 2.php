@@ -73,7 +73,7 @@
         <!-- Contenu principal -->
         <main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
             <!-- Liste de dossiers -->
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
+            {{-- <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
                 @if (count($documentGene) > 0)
                     <div>
                         <button
@@ -120,7 +120,254 @@
                         </div>
                     @endforeach
                 @endif
+            </div> --}}
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    @if (count($documentGene) > 0)
+        <div>
+            <button class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition relative">
+                <a href="{{ route('show_docs', 0) }}">
+                    <img src="{{ asset('img/depot.svg') }}" style="height: 100px" alt="">
+                    <span class="mt-2 text-sm font-medium text-gray-700">Depôts</span>
+                </a>
+                <!-- Icônes pour Depôts -->
+                <div class="absolute top-2 right-2 flex space-x-1">
+                    <button class="icon-btn" onclick="openModal('recherche', 'Depôts', 0)" title="Rechercher">🔍</button>
+                    <button class="icon-btn" onclick="openModal('detail', 'Depôts', 0)" title="Détails">📋</button>
+                    <button class="icon-btn" onclick="openModal('voir', 'Depôts', 0)" title="Voir">👁️</button>
+                    <button class="icon-btn" onclick="openModal('favori', 'Depôts', 0)" title="Favoris">⭐</button>
+                </div>
+            </button>
+        </div>
+    @endif
+    
+    @if ((Auth::user()->role->nom == 'SuperAdministrateur') | (Auth::user()->role->nom == 'Administrateur'))
+        @foreach ($servicePaginate as $service)
+            <div>
+                <button class="iconButton flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition relative"
+                        data-service-id="{{ $service->id }}">
+                    <a href="{{ route('show_docs', $service->id) }}">
+                        <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
+                        <span class="mt-2 text-sm font-medium text-gray-700">{{ $service->nom }}</span>
+                    </a>
+                    <!-- Icônes pour chaque service -->
+                    <div class="absolute top-2 right-2 flex space-x-1">
+                        <button class="icon-btn" onclick="openModal('recherche', '{{ $service->nom }}', {{ $service->id }})" title="Rechercher">🔍</button>
+                        <button class="icon-btn" onclick="openModal('detail', '{{ $service->nom }}', {{ $service->id }})" title="Détails">📋</button>
+                        <button class="icon-btn" onclick="openModal('voir', '{{ $service->nom }}', {{ $service->id }})" title="Voir">👁️</button>
+                        <button class="icon-btn" onclick="openModal('favori', '{{ $service->nom }}', {{ $service->id }})" title="Favoris">⭐</button>
+                    </div>
+                </button>
             </div>
+        @endforeach
+    @else
+        <div>
+            <button class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition relative">
+                <a href="{{ route('show_docs', $service->id) }}">
+                    <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
+                    <span class="mt-2 text-sm font-medium text-gray-700">{{ $service->nom }}</span>
+                </a>
+                <!-- Icônes pour service principal -->
+                <div class="absolute top-2 right-2 flex space-x-1">
+                    <button class="icon-btn" onclick="openModal('recherche', '{{ $service->nom }}', {{ $service->id }})" title="Rechercher">🔍</button>
+                    <button class="icon-btn" onclick="openModal('detail', '{{ $service->nom }}', {{ $service->id }})" title="Détails">📋</button>
+                    <button class="icon-btn" onclick="openModal('voir', '{{ $service->nom }}', {{ $service->id }})" title="Voir">👁️</button>
+                    <button class="icon-btn" onclick="openModal('favori', '{{ $service->nom }}', {{ $service->id }})" title="Favoris">⭐</button>
+                </div>
+            </button>
+        </div>
+        
+        @foreach ($serviceIdent as $serv)
+            <div>
+                <button class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition relative">
+                    <a href="{{ route('show_docs', $serv->id) }}">
+                        <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
+                        <span class="mt-2 text-sm font-medium text-gray-700">{{ $serv->nom }}</span>
+                    </a>
+                    <!-- Icônes pour chaque serviceIdent -->
+                    <div class="absolute top-2 right-2 flex space-x-1">
+                        <button class="icon-btn" onclick="openModal('recherche', '{{ $serv->nom }}', {{ $serv->id }})" title="Rechercher">🔍</button>
+                        <button class="icon-btn" onclick="openModal('detail', '{{ $serv->nom }}', {{ $serv->id }})" title="Détails">📋</button>
+                        <button class="icon-btn" onclick="openModal('voir', '{{ $serv->nom }}', {{ $serv->id }})" title="Voir">👁️</button>
+                        <button class="icon-btn" onclick="openModal('favori', '{{ $serv->nom }}', {{ $serv->id }})" title="Favoris">⭐</button>
+                    </div>
+                </button>
+            </div>
+        @endforeach
+    @endif
+</div>
+
+<!-- Modal Universal -->
+<div id="serviceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                <span id="modalIcon" class="text-2xl">📁</span>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4" id="modalTitle">
+                Titre du modal
+            </h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 mb-2" id="modalServiceName">
+                    Nom du classeur
+                </p>
+                <div class="text-left bg-gray-50 p-3 rounded" id="modalContent">
+                    Contenu du modal
+                </div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="closeModal"
+                        class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(type, serviceName, serviceId) {
+    // Empêcher la propagation du clic
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const modal = document.getElementById('serviceModal');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalServiceName = document.getElementById('modalServiceName');
+    const modalContent = document.getElementById('modalContent');
+    
+    // Configuration selon le type d'action
+    let config = {
+        'recherche': {
+            icon: '🔍',
+            title: 'Rechercher dans le classeur',
+            content: `
+                <div class="space-y-2">
+                    <p><strong>Action:</strong> Recherche</p>
+                    <p><strong>Classeur:</strong> ${serviceName}</p>
+                    <p><strong>ID:</strong> ${serviceId}</p>
+                    <div class="mt-3">
+                        <input type="text" placeholder="Tapez votre recherche..." 
+                               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2">Recherchez des documents dans ce classeur</p>
+                </div>
+            `
+        },
+        'detail': {
+            icon: '📋',
+            title: 'Détails du classeur',
+            content: `
+                <div class="space-y-2">
+                    <p><strong>Nom:</strong> ${serviceName}</p>
+                    <p><strong>ID:</strong> ${serviceId}</p>
+                    <p><strong>Type:</strong> Classeur de service</p>
+                    <p><strong>Statut:</strong> Actif</p>
+                    <p><strong>Dernière modification:</strong> ${new Date().toLocaleDateString()}</p>
+                    <p><strong>Nombre de documents:</strong> En cours de calcul...</p>
+                </div>
+            `
+        },
+        'voir': {
+            icon: '👁️',
+            title: 'Aperçu du classeur',
+            content: `
+                <div class="space-y-2">
+                    <p><strong>Aperçu de:</strong> ${serviceName}</p>
+                    <p><strong>ID:</strong> ${serviceId}</p>
+                    <div class="mt-3 p-2 bg-blue-50 rounded">
+                        <p class="text-sm">📁 ${serviceName}</p>
+                        <p class="text-xs text-gray-600">├── Documents récents</p>
+                        <p class="text-xs text-gray-600">├── Archives</p>
+                        <p class="text-xs text-gray-600">└── Favoris</p>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2">Cliquez sur "Ouvrir" pour voir le contenu complet</p>
+                </div>
+            `
+        },
+        'favori': {
+            icon: '⭐',
+            title: 'Gestion des favoris',
+            content: `
+                <div class="space-y-2">
+                    <p><strong>Classeur:</strong> ${serviceName}</p>
+                    <p><strong>ID:</strong> ${serviceId}</p>
+                    <div class="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+                        <p class="text-sm font-medium text-yellow-800">⭐ Ajouter aux favoris</p>
+                        <p class="text-xs text-yellow-700 mt-1">Ce classeur sera ajouté à votre liste de favoris pour un accès rapide</p>
+                    </div>
+                    <button class="w-full mt-2 px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
+                        Ajouter aux favoris
+                    </button>
+                </div>
+            `
+        }
+    };
+    
+    // Appliquer la configuration
+    modalIcon.textContent = config[type].icon;
+    modalTitle.textContent = config[type].title;
+    modalServiceName.textContent = `Classeur: ${serviceName}`;
+    modalContent.innerHTML = config[type].content;
+    
+    // Afficher le modal
+    modal.classList.remove('hidden');
+}
+
+// Fermer le modal
+document.getElementById('closeModal').addEventListener('click', function() {
+    document.getElementById('serviceModal').classList.add('hidden');
+});
+
+// Fermer le modal en cliquant en dehors
+document.getElementById('serviceModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+
+// Fermer avec la touche Échap
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('serviceModal').classList.add('hidden');
+    }
+});
+</script>
+
+<style>
+.icon-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: scale(1.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Responsive pour les icônes sur mobile */
+@media (max-width: 640px) {
+    .icon-btn {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+    }
+}
+</style>
             <div class=" py-4 px-6 rounded-lg  " style="margin-top:30px ">
                 {{ $servicePaginate->links() }}
             </div>
