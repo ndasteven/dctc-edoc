@@ -189,13 +189,13 @@
                         </button>
 
                         <!-- Dropdown menu -->
-                        <div id="dropdownSecurity"
+                        <div id="dropdownSecurity" 
                             class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
                             style="width: 62%">
                             <ul class="py-2 text-sm text-white dark:text-gray-200 "
                                 aria-labelledby="dropdownSecurityButton">
                                 <li class="bg-blue-400">
-                                    <a href="#"
+                                    <a href="#" @click="openPermission"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600 ">
                                         Gérer les permissions
                                     </a>
@@ -219,6 +219,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Modal verrouillage -->
 
             <button data-modal-target="modal-verrou" id="openModalVerrou" data-modal-toggle="modal-verrou">
@@ -306,10 +307,17 @@
     function openModalVerrou() {
         document.getElementById('openModalVerrou').click()
     }
+    function openPermission(){
+        document.getElementById('permissionModal').classList.remove("hidden")
+    }
+    function closePermission(){
+      document.getElementById('permissionModal').classList.add("hidden")  
+    }
     document.addEventListener('errorVerrou', () => {
         alert('error')
     })
     document.addEventListener('successVerrou', () => {
         alert('success')
     })
+    
 </script>

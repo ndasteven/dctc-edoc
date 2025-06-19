@@ -1,8 +1,5 @@
 <?php
 
-// Désactiver les erreurs de type DEPRECATED avant tout
-error_reporting(E_ALL & ~E_DEPRECATED);
-
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
