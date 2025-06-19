@@ -3,7 +3,7 @@
 
     <div>
         <label for="user-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Ciblez des utilisateurs
+            Ciblez des utilisateursss
         </label>
         <div class="relative mt-2">
             <!-- Champ d'entrée -->
