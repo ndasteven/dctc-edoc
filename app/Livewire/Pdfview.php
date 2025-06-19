@@ -8,6 +8,8 @@ class Pdfview extends Component
 {
     public $document;
     public $nom;
+     public string $unlockCode = '';
+    public bool $accessGranted = true;
     public function mount($document)
     {
         $this->nom =pathinfo($document->filename, PATHINFO_FILENAME).'.pdf';

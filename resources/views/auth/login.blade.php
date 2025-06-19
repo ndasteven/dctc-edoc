@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <x-authentication-card>
+    
         <x-slot name="logo">
             <a href="/">
                 <img src="{{ asset('img/5-1.png') }}" alt="logo" class=" w-40 h-40 mx-auto">
@@ -48,7 +48,7 @@
             }
         </style>
 
-        <x-validation-errors class="mb-4" />
+       
 
         @session('status')
             <div class="mb-4 font-medium text-sm text-green-600">
@@ -56,41 +56,100 @@
             </div>
         @endsession
 
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
+       <!-- From Uiverse.io by Ameth1208 --> 
+       <div class="flex flex-col md:flex-row h-screen w-full">
+  <!-- Form Section (6/12) -->
+  <div class="md:w-6/12 w-full flex justify-center items-center bg-white dark:bg-gray-900">
+    <div class="w-full max-w-md px-8 py-6 bg-white dark:bg-gray-900 rounded-xl ">
+      <form method="POST" action="{{ route('login') }}" class="flex flex-col select-none">
+        @csrf
+        <div class="flex flex-col items-center justify-center gap-2 mb-8">
+          <img src="{{ asset('img/5-1.png') }}" alt="logo" class="w-40 h-40 mx-auto">
+          <p class="text-[16px] font-semibold dark:text-white">Connectez-vous à votre compte</p>
+          <span class="text-xs max-w-[90%] text-center text-[#8B8E98]">
+          <x-validation-errors class="mb-4" />
+          </span>
+        </div>
 
-            <div>
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
-                    required autofocus autocomplete="username" />
-            </div>
+        <div class="w-full flex flex-col gap-2 mb-4">
+          <label class="font-semibold text-xs text-gray-400" for="username">Email</label>
+          <input
+            id="username"
+            type="email"
+            name="email"
+            :value="old('email')"
+            required
+            autofocus
+            autocomplete="username"
+            class="border rounded-lg px-3 py-2 text-sm w-full outline-none dark:border-gray-500 dark:bg-gray-900"
+          />
+        </div>
 
-            <div class="mt-4">
-                <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required
-                    autocomplete="current-password" />
-            </div>
+        <div class="w-full flex flex-col gap-2 mb-6">
+          <label class="font-semibold text-xs text-gray-400" for="password">Mot de passe</label>
+          <input
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            type="password"
+            required
+            class="border rounded-lg px-3 py-2 text-sm w-full outline-none dark:border-gray-500 dark:bg-gray-900"
+          />
+        </div>
 
-            <div class="block mt-4">
-                <label for="remember_me" class="flex items-center">
-                    <x-checkbox id="remember_me" name="remember" />
-                    <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-                </label>
-            </div>
+        <div class="w-full">
+          <button
+            type="submit"
+            class="py-2 px-8 bg-blue-500 hover:bg-blue-800 text-white w-full transition duration-200 text-center text-base font-semibold shadow-md rounded-lg cursor-pointer"
+          >
+            Se connecter
+          </button>
+          
+        </div>
+      </form>
+    </div>
+  </div>
 
-            <div class="flex items-center justify-end mt-4">
-                @if (Route::has('password.request'))
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        href="{{ route('password.request') }}">
-                        {{ __('Forgot your password?') }}
-                    </a>
-                @endif
+  <!-- Carousel Section (6/12) -->
+  <div class="md:w-6/12 w-full h-full mt-6 md:mt-0 hidden md:block
+">
+    <div id="animation-carousel" class="relative w-full h-full" data-carousel="static">
+      <div class="relative h-full overflow-hidden rounded-lg">
+        <!-- Items -->
+        <div class="hidden duration-700 ease-in-out h-full" data-carousel-item="active">
+          <img src="{{ asset('img/img1.jpeg') }}" class="absolute object-cover w-full h-full" alt="...">
+        </div>
+        <div class="hidden duration-700 ease-in-out h-full" data-carousel-item>
+          <img src="{{ asset('img/img2.jpeg') }}" class="absolute object-cover w-full h-full" alt="...">
+        </div>
+        <div class="hidden duration-700 ease-in-out h-full" data-carousel-item>
+          <img src="{{ asset('img/img3.jpeg') }}" class="absolute object-cover w-full h-full" alt="...">
+        </div>
+      </div>
 
-                <x-button class="ms-4">
-                    {{ __('Log in') }}
-                </x-button>
-            </div>
-        </form>
+      <!-- Tu peux ajouter ici les boutons / indicateurs si nécessaire -->
+       <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
+            </svg>
+            <span class="sr-only">Previous</span>
+        </span>
+    </button>
+    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+            </svg>
+            <span class="sr-only">Next</span>
+        </span>
+    </button>
+    </div>
+  </div>
+</div>
+
+
+
 
 
         @if (!\App\Models\Licence::isVerified())
@@ -234,5 +293,5 @@
             }, 5000); // 10000ms = 10 secondes
         </script>
 
-    </x-authentication-card>
+    
 </x-guest-layout>

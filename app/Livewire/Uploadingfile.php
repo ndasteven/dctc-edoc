@@ -28,14 +28,8 @@ class Uploadingfile extends Component
     public $confidence = false;
     public $compteFileSelected = 0;  
     public $search_service='';
-
-    protected $rules = [
-        'mot_cle' => 'nullable|string|max:255', // Autorise null
-        'service_id' => 'required|array|min:1',
-        'users_confidence' => 'nullable|array',
-        'files.*' => 'file|max:204800', // 20MB
-    ];
-
+    public $loading;
+   
     protected $message = [
         'service_id.required' => 'Selectionnez au moins un service',
     ];

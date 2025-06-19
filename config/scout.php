@@ -17,6 +17,9 @@ return [
     */
 
     'driver' => env('SCOUT_DRIVER', 'meilisearch'),
+    #'driver' => env('SCOUT_DRIVER', 'elastic'),
+    #'driver' => env('SCOUT_DRIVER', 'algolia'),
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -129,7 +132,7 @@ return [
     | See: https://www.meilisearch.com/docs/learn/configuration/instance_options#all-instance-options
     |
     */
-
+    
     'meilisearch' => [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
@@ -139,6 +142,17 @@ return [
             // ],
         ],
     ],
+    
+    /*pour la configuration de Elastique seach*/
+
+    'elasticsearch' => [
+        'index' => env('ELASTICSEARCH_INDEX', 'documents'),
+
+        'hosts' => [
+        env('ELASTICSEARCH_HOST', 'localhost') . ':' . env('ELASTICSEARCH_PORT', 9200),
+    ],
+    ],
+
 
     /*
     |--------------------------------------------------------------------------

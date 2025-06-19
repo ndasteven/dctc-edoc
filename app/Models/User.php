@@ -98,4 +98,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Document::class, 'document_users_conf', 'user_id', 'doc_id')->withTimestamps();
     }
 
+    public function folder()
+{
+    return $this->hasMany(folder::class);
+}
+
 }

@@ -28,7 +28,8 @@
     </x-slot>
 
     @livewire('pdfview', ['document' => $document])
-
+    @livewire('modal-verrou', ['id' => $document->id, 'model'=>'document'])
+    
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 text-center py-6 w-full">
         <p>&copy; 2025 DCTC-eDoc - Tous droits réservés.</p>

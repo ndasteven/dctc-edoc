@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
@@ -23,5 +24,8 @@ public function users()
 
     public function identificate(){
         return $this->belongsToMany(User::class, 'service_users_identification', 'services_id', 'user_id')->withTimestamps();
+    }
+    public function folder_service(){   
+        return $this->hasMany(Folder::class);
     }
 }

@@ -15,7 +15,7 @@
     </style>
 
     <div>
-        <div class="max-w-md mx-auto">
+        <div class="max-w-2xl mx-auto">
             <div class="relative">
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
@@ -47,7 +47,7 @@
 
     @if ($query)
         <div id="result"
-            class=" overflow-y-scroll h-60 max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+            class=" overflow-y-scroll h-60 max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
 
             @if ((Auth::user()->role->nom === 'SuperAdministrateur') | (Auth::user()->role->nom === 'Administrateur'))
                 <h2 class="text-xl font-bold mb-4 text-gray-700 space-x-2">Resultats de la recherche :

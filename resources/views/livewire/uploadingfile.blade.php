@@ -46,7 +46,7 @@
                         <!-- Zone de Drag & Drop -->
                         <div id="dropzone"
                             class="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all border-gray-300 w-full">
-                            <input  type="file" id="upload" class="hidden" wire:model.defer="files">
+                            <input  type="file" id="upload" class="hidden" wire:model.defer="files" multiple>
                             <label for="upload" class="cursor-pointer text-gray-500 hover:text-blue-500">
                                 <svg class="w-full h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor"
                                     stroke-width="2" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@
                         </div>
                         <!-- Loading Indicator -->
                 
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2 " id="bar-upload-file-progress">
+                        <div  class="w-full bg-gray-200 rounded-full h-2 mt-2 " id="bar-upload-file-progress" style="display: none">
                             <!-- Barre de progression avec Alpine.js -->
                             <div id="progress" class="bg-blue-500 h-2 rounded-full transition-all "
                                 style="width: 0%;"></div>
@@ -94,10 +94,18 @@
                                         class="text-red-500 hover:text-red-700">&times;
                                     </a>
                                 </div>
-                                @if (session()->has('message'))
-                                    <p class="text-green-600 mt-2">{{ session('message') }}</p>
-                                @endif
-                             
+                                
+                                @error('files.'.$index)
+                                <div class="flex items-center text-sm text-red-500">
+                                    <svg class="w-5 h-5 me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <small>{{ $message }}</small>
+                                </div>  
+                                @enderror     
                         @endforeach
                         </div>
                             
@@ -112,7 +120,7 @@
                     Fichiers valides : Image(PNG, JPEG), Text, PDF, Word, Excel, CSV, PowerPoint
                 </p>
             </div>
-
+            
                
 
             <!-- Error Display -->
@@ -126,7 +134,7 @@
                                 clip-rule="evenodd" />
                         </svg>
 
-                        <p>{{ $errors->first('files') }}</p>
+                        <small>{{ $errors->first('files') }}</small>
                     </div>
                 @endif
             </div>
@@ -195,26 +203,6 @@
                     </h3>
                 </div>
                 <div class="overflow-y-auto h-40">
-                    <div class="mb-5">
-                        <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"><small>Rechercher un service à selectionner</small></label>
-                        <input id="dropdownNotificationButton" wire:model.live="search_service" type="search"
-                            class="block w-full p-1 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Rechercher un service" required />
-                        <div wire:loading wire:target="search_service" role="status" style="position:absolute; top:15px; right:40px">
-                            <svg aria-hidden="true"
-                                class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-                                viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                    fill="currentColor" />
-                                <path
-                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                    fill="currentFill" />
-                            </svg>
-                            <span class="sr-only">Chargement...</span>
-                        </div>
-
-                    </div>
                   <ul
                     class="w-full text-sm font-medium bg-white border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     @foreach ($services as $service)
@@ -319,7 +307,10 @@
         })
         // Lorsque l'upload démarre, réinitialise la barre à 0%
         let bar_upload_file_progress = document.getElementById('bar-upload-file-progress')       
-        document.addEventListener('livewire-upload-start', () => {            
+        document.addEventListener('livewire-upload-start', () => {  
+            if (fileTotal>0) {
+              @this.set('compteFileSelected',fileTotal)  
+            }          
             const progressElem = document.getElementById('progress');
             const progressText = document.getElementById('progressText');
             if (progressElem) {
@@ -333,9 +324,7 @@
 
         // Met à jour la barre en fonction de la progression (Livewire envoie event.detail.progress)
         document.addEventListener('livewire-upload-progress', event => {
-            if (fileTotal>0) {
-              @this.set('compteFileSelected',fileTotal)  
-            }
+           
                   
             bar_upload_file_progress.style.display="block"
             const progress = event.detail.progress; // Progression en pourcentage (0 à 100)

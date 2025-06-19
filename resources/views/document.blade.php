@@ -1,24 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center space-x-4">
-            @if ((Auth::user()->role->nom === 'SuperAdministrateur') | (Auth::user()->role->nom === 'Administrateur'))
-                <div class="text-center">
-                    <button
-                        class="hover:bg-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-gray-200 dark:hover:bg-gray-300 focus:outline-none dark:focus:ring-gray-200"
-                        type="button" data-drawer-target="drawer-disable-body-scrolling"
-                        data-drawer-show="drawer-disable-body-scrolling" data-drawer-body-scrolling="false"
-                        aria-controls="drawer-disable-body-scrolling">
-                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                            viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
-                                d="M5 7h14M5 12h14M5 17h14" />
-                        </svg>
-                    </button>
-                </div>
-            @endif
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Documents') }}
+                {{ __('Classeurs') }}
             </h2>
         </div>
         @livewire('service-search')
@@ -82,21 +66,17 @@
         }
     </style>
 
-    <div class="flex h-screen relative">
+    <div class="flex  relative mx-auto" style="height:80vh;">
         <!-- Contenu principal -->
         <main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
             <!-- Liste de dossiers -->
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
                 @if (count($documentGene) > 0)
                     <div>
                         <button
                             class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition">
                             <a href="{{ route('show_docs', 0) }}">
-                                <svg class="w-12 h-12 text-red-500" xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M10 4a2 2 0 0 1 1.414.586L13 6h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5Z" />
-                                </svg>
+                                <img src="{{ asset('img/depot.svg') }}" style="height: 100px" alt="">
                                 <span class="mt-2 text-sm font-medium text-gray-700">Depôts</span>
                             </a>
                         </button>
@@ -110,11 +90,7 @@
                                 data-service-id="{{ $service->id }}"
                                 >
                                 <a href="{{ route('show_docs', $service->id) }}">
-                                    <svg class="w-12 h-12 text-yellow-500 iconFile" xmlns="http://www.w3.org/2000/svg"
-                                        fill="currentColor" viewBox="0 0 24 24"> +
-                                        <path
-                                            d="M10 4a2 2 0 0 1 1.414.586L13 6h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5Z" />
-                                    </svg>
+                                    <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
                                     <span class="mt-2 text-sm font-medium text-gray-700">{{ $service->nom }} </span>
                                 </a>
                             </button>
@@ -125,11 +101,7 @@
                         <button
                             class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition">
                             <a href="{{ route('show_docs', $service->id) }}">
-                                <svg class="w-12 h-12 text-yellow-500" xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M10 4a2 2 0 0 1 1.414.586L13 6h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5Z" />
-                                </svg>
+                                <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
                                 <span class="mt-2 text-sm font-medium text-gray-700">{{ $service->nom }}</span>
                             </a>
                         </button>
@@ -139,11 +111,7 @@
                             <button
                                 class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition">
                                 <a href="{{ route('show_docs', $serv->id) }}">
-                                    <svg class=" text-yellow-500" xmlns="http://www.w3.org/2000/svg" style=""
-                                        fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M10 4a2 2 0 0 1 1.414.586L13 6h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5Z" />
-                                    </svg>
+                                   
                                     <span class="mt-2 text-sm font-medium text-gray-700">{{ $serv->nom }}</span> 
                                 </a>
                             </button>
@@ -151,7 +119,7 @@
                     @endforeach
                 @endif
             </div>
-            <div class=" py-4 px-6 bg-white rounded-lg shadow-md hover:shadow-lg transition " style="margin-top:30px ">
+            <div class=" py-4 px-6 rounded-lg  " style="margin-top:30px ">
                 {{ $servicePaginate->links()}}
             </div>
         </main>
@@ -159,65 +127,7 @@
     </div>
 
     {{-- Menu --}}
-    <div class="py-12 pr-3 pl-3">
 
-        <!-- drawer component -->
-        <div id="drawer-disable-body-scrolling"
-            class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-white w-64 dark:bg-gray-800"
-            tabindex="-1" aria-labelledby="drawer-disable-body-scrolling-label">
-            <h5 id="drawer-disable-body-scrolling-label"
-                class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">Menu</h5>
-            <button type="button" data-drawer-hide="drawer-disable-body-scrolling"
-                aria-controls="drawer-disable-body-scrolling"
-                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center dark:hover:bg-gray-600 dark:hover:text-white">
-                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 14 14">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                </svg>
-                <span class="sr-only">Close menu</span>
-            </button>
-            <div class="py-4 overflow-y-auto">
-                <ul class="space-y-2 font-medium">
-                    <!-- Ajouter un document -->
-                    <li>
-                        <a data-modal-target="static-modal" data-modal-toggle="static-modal"
-                            class="flex items-center openModalDoc p-2 text-gray-900 rounded-lg dark:text-white hover:bg-green-200 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-5 h-5 text-green-500 transition duration-75 group-hover:text-green-900 dark:text-gray-400 dark:group-hover:text-white"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M9 7V2.221a2 2 0 0 0-.5.365L4.586 6.5a2 2 0 0 0-.365.5H9Zm2 0V2h7a2 2 0 0 1 2 2v6.41A7.5 7.5 0 1 0 10.5 22H6a2 2 0 0 1-2-2V9h5a2 2 0 0 0 2-2Z"
-                                    clip-rule="evenodd" />
-                                <path fill-rule="evenodd"
-                                    d="M9 16a6 6 0 1 1 12 0 6 6 0 0 1-12 0Zm6-3a1 1 0 0 1 1 1v1h1a1 1 0 1 1 0 2h-1v1a1 1 0 1 1-2 0v-1h-1a1 1 0 1 1 0-2h1v-1a1 1 0 0 1 1-1Z"
-                                    clip-rule="evenodd" />
-                            </svg>
-
-                            <span class="flex-1 ms-3 whitespace-nowrap">Ajouter un document</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="space-y-2 font-medium">
-                    <!-- Supprimer documents -->
-                    <li>
-                        <a data-modal-target="extralarge-modal" data-modal-toggle="extralarge-modal"
-                            class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-red-200 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-5 h-5 text-red-500 transition duration-75 group-hover:text-red-900 dark:text-gray-400 dark:group-hover:text-white"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
-                            </svg>
-
-
-                            <span class="flex-1 ms-3 whitespace-nowrap">Supprimer documents</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-    </div>
 
 
     <!-- Main modal -->
@@ -289,7 +199,7 @@
                                         </div>
 
                                     </div>
-
+                                    <livewire:folder-manager />
                                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                         <thead
                                             class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -310,7 +220,7 @@
                                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                     <th scope="row"
                                                         class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white inline-flex space-x-2">
-                                                        {{ $document->nom }} 
+                                                        {{ $document->nom }}.{{ $document->type }} hello 
                                                     </th>
                                                     <td class="px-6 py-4">
                                                         @if ($document->type == 'pdf')

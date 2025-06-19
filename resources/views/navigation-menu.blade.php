@@ -24,7 +24,7 @@
                         </x-nav-link>
                     @endif
                     <x-nav-link href="{{ route('document') }}" :active="request()->routeIs('document')">
-                        {{ __('Document') }}
+                        {{ __('Classeurs') }}
                     </x-nav-link>
                     <x-nav-link>
                         <button id="licencebutton1" type="button" data-dropdown-toggle="licenceDropdown1"
@@ -235,7 +235,7 @@
                 </x-responsive-nav-link>
             @endif
             <x-responsive-nav-link href="{{ route('document') }}" :active="request()->routeIs('document')">
-                {{ __('Document') }}
+                {{ __('Classeurs') }}
             </x-responsive-nav-link>
 
         </div>

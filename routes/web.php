@@ -12,7 +12,9 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\PdfView;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LicenceController;
+use App\Http\Controllers\serviceFolder;
 use Illuminate\Support\Facades\Request;
+use App\Models\Folder;
 
 Route::get('/newAccount', [RegisterController::class, 'index'])->middleware('checklicence')->name('register');
 Route::post('/Account/store', [RegisterController::class, 'store'])->middleware('checklicence')->name('user.new');
@@ -57,7 +59,7 @@ Route::middleware([
 })->group(function () {
     Route::put('/service_update/{id}', [ServiceController::class, 'update'])->middleware('checklicence')->name('service.update');
 })->group(function () {
-    Route::get('/documents/{service}', [DocumentController::class, 'getDocuments'])->middleware('checklicence')->name('show_docs');;
+    Route::get('/documents/{service}', [DocumentController::class, 'getDocuments'])->middleware('checklicence')->name(' ');
 })->group(function () {
     Route::get('/api/users', [UserController::class, 'users.search'])->middleware('checklicence');
 })->group(function () {
@@ -82,4 +84,17 @@ Route::middleware([
     Route::get('/export-historque-pdf', [HistoryController::class, 'exportPDF'])->middleware('checklicence')->name('history.export');
 })->group(function(){
     Route::get('/editer/{id}', [DocumentEditor::class, 'index'])->name('documents.edit');
+})->group(function(){
+    Route::get('/test', function () {
+    return redirect()->route('folders.show', ['folder' => null]);
 });
+Route::get('/folders/{folderId?}', function (?int $folderId = null) {
+    return view('folder-view', ['folderId' => $folderId]);
+})->name('folders.show');
+})->group(function () {
+    Route::get('/documentsFolder/{service}', [serviceFolder::class, 'getFolderService']
+    )->middleware('checklicence')->name('show_docs');});
+
+
+
+

@@ -16,20 +16,13 @@ use Smalot\PdfParser\Parser;
 class AddDocServ extends Component
 {
     use WithFileUploads;
-
-    #[Validate('required|file|mimes:txt,pdf,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpeg|max:51200')]
-    public $file;
+    public $files=[]; // Permet de stocker plusieurs fichiers
     public $mot_cle;
     public $service_id = [];
     public $users_confidence = [];
     public $confidence = false;
     public $progress = 0;
-
-    protected $rules = [
-        
-        'service_id' => 'required|array|min:1',
-        'users_confidence' => 'nullable|array',
-    ];
+    public $compteFileSelected = 0;  
 
     protected $message = [
         'service_id.required' => 'Selectionnez au moins un service',
@@ -42,15 +35,17 @@ class AddDocServ extends Component
         $this->service = $service;
         $this->service_id[] = $this->service->id;
     }
-
+    
     public function save()
     {
-        ini_set('memory_limit', '512M');
-
-        $this->validate();
-
-        // Récupérer le fichier téléchargé
-        $file = $this->file;
+        $this->validate([
+            'files.*' => 'required|file|mimes:txt,pdf,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpeg|max:1000200',
+            'service_id' => 'required|array|min:1',
+            'users_confidence' => 'nullable|array',
+        ]);
+        
+        foreach ($this->files as $file) {
+       
 
         // Obtenir le nom original du fichier
         $originalName = $file->getClientOriginalName();
@@ -67,7 +62,7 @@ class AddDocServ extends Component
             $counter++;
         }
 
-        $path = $this->file->store('archives', 'public');
+        $path = $file->store('archives', 'public');
 
         // Le chemin complet du fichier
         $fullPath = storage_path('app/public/' . $path);
@@ -83,12 +78,14 @@ class AddDocServ extends Component
         $document = Document::create([
             'nom' => $newName,
             'filename' => $path,
-            'type' => $this->file->getClientOriginalExtension(),
-            'taille' => round($this->file->getSize() / 1024),
+            'type' => $file->getClientOriginalExtension(),
+            'taille' => round($file->getSize() / 1024),
             'content' => '',
             "user_id" => Auth::user()->id,
+            "folder_id"=>1,
             "confidentiel" => $this->confidence,
         ]);
+
         traitementQueueUploadFile::dispatch($document, $this->mot_cle ?? '', $this->confidence);// Garantit une string vide si null
         
         $document->services()->attach($this->service_id);
@@ -110,13 +107,24 @@ class AddDocServ extends Component
             'user_id' => Auth::user()->id,
             'confidentiel' => $this->confidence,
         ]);
-
+    }
         return redirect()->route('show_docs', $this->service->id)->with('success', 'Le fichier a été téléchargé avec succès sous le nom de ' . $newName);
+    
     }
 
-    public function removeFile()
+    public function removeFile($index)
     {
-        $this->reset('file', 'progress');
+        if (isset($this->files[$index])) {
+            unset($this->files[$index]); // Supprime le fichier du tableau
+            $this->files = array_values($this->files); // Réindexe le tableau pour éviter des trous
+            $this->compteFileSelected =-1;
+        }
+        $this->dispatch('files-cleared');
+    }
+    public function removeAll(){
+        $this->files =[];
+        $this->compteFileSelected=0;
+        $this->dispatch('files-cleared-all');
     }
 
     public function render()

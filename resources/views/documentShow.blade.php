@@ -100,6 +100,7 @@
                     </button>
                 @endif
             @endif
+            
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg pr-8 pl-8 pt-5 pb-5">
                 <div class="relative overflow-x-auto shadow-md sm:rounded-lg pt-5 pb-5">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -250,7 +251,7 @@
 
                         </tbody>
                     </table>
-
+                    
                     <!-- Pagination -->
                     <div class="mt-4">
                         {{ $documents->links() }}
