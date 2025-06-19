@@ -11,6 +11,7 @@ class Document extends Model
 {
     use HasFactory, Searchable;
 
+
     protected $fillable = ['nom', 'filename', 'type', 'taille', 'user_id', 'confidentiel', 'content','folder_id','verrouille','code_verrou'];
 
     // Définissez les attributs qui seront indexés
@@ -21,7 +22,6 @@ class Document extends Model
             'nom' => $this->nom,
             'content' => $this->content, ];
     }
-    
 
     public function user()
     {

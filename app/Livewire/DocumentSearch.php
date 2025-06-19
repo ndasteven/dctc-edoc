@@ -83,4 +83,6 @@ class DocumentSearch extends Component
 
         return view('livewire.document-search', ['documents' => $documents, 'document_autor' => $this->document_autor]);
     }
+
+    
 }
