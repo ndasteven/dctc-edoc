@@ -29,19 +29,16 @@
         }
 
         .grossirDrag {
-
+            
             background-color: rgba(175, 164, 164, 0.6);
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 482.14 482.14"><g><path d="M302.599,0H108.966C80.66,0,57.652,23.025,57.652,51.315v379.509c0,28.289,23.008,51.315,51.314,51.315h264.205 c28.275,0,51.316-23.026,51.316-51.315V121.449L302.599,0z M373.171,450.698H108.966c-10.969,0-19.89-8.905-19.89-19.874V51.315 c0-10.953,8.921-19.858,19.89-19.858l181.875-0.189v67.218c0,19.653,15.949,35.603,35.588,35.603l65.877-0.189l0.725,296.925 C393.03,441.793,384.142,450.698,373.171,450.698z"/><path d="M241.054,150.96c-49.756,0-90.102,40.347-90.102,90.109c0,49.764,40.346,90.11,90.102,90.11 c49.771,0,90.117-40.347,90.117-90.11C331.171,191.307,290.825,150.96,241.054,150.96z M273.915,253.087h-20.838v20.835 c0,6.636-5.373,12.017-12.023,12.017c-6.619,0-12.01-5.382-12.01-12.017v-20.835H208.21c-6.637,0-12.012-5.383-12.012-12.018 c0-6.634,5.375-12.017,12.012-12.017h20.834v-20.835c0-6.636,5.391-12.018,12.01-12.018c6.65,0,12.023,5.382,12.023,12.018v20.835 h20.838c6.635,0,12.008,5.383,12.008,12.017C285.923,247.704,280.55,253.087,273.915,253.087z"/></g></svg>');
             background-repeat: no-repeat;
-            background-size: 50px 50px;
-            /* ou cover selon besoin */
+            background-size: 50px 50px; /* ou cover selon besoin */
             background-position: center;
             z-index: 1;
         }
-
         .grossirDrag * {
-            opacity: 0.5;
-            /* Rend les éléments enfants transparents */
+         opacity: 0.5; /* Rend les éléments enfants transparents */
         }
 
 
@@ -88,9 +85,10 @@
                 @if ((Auth::user()->role->nom == 'SuperAdministrateur') | (Auth::user()->role->nom == 'Administrateur'))
                     @foreach ($servicePaginate as $service)
                         <div>
-                            <button
+                            <button 
                                 class="iconButton flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition"
-                                data-service-id="{{ $service->id }}">
+                                data-service-id="{{ $service->id }}"
+                                >
                                 <a href="{{ route('show_docs', $service->id) }}">
                                     <img src="{{ asset('img/classeur.svg') }}" style="height: 100px" alt="">
                                     <span class="mt-2 text-sm font-medium text-gray-700">{{ $service->nom }} </span>
@@ -113,8 +111,8 @@
                             <button
                                 class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition">
                                 <a href="{{ route('show_docs', $serv->id) }}">
-
-                                    <span class="mt-2 text-sm font-medium text-gray-700">{{ $serv->nom }}</span>
+                                   
+                                    <span class="mt-2 text-sm font-medium text-gray-700">{{ $serv->nom }}</span> 
                                 </a>
                             </button>
                         </div>
@@ -122,10 +120,10 @@
                 @endif
             </div>
             <div class=" py-4 px-6 rounded-lg  " style="margin-top:30px ">
-                {{ $servicePaginate->links() }}
+                {{ $servicePaginate->links()}}
             </div>
         </main>
-
+        
     </div>
 
     {{-- Menu --}}
@@ -160,8 +158,8 @@
                         data-modal-hide="extralarge-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                         </svg>
                         <span class="sr-only">Close modal</span>
                     </button>
@@ -222,7 +220,7 @@
                                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                     <th scope="row"
                                                         class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white inline-flex space-x-2">
-                                                        {{ $document->nom }}.{{ $document->type }} hello
+                                                        {{ $document->nom }}.{{ $document->type }} hello 
                                                     </th>
                                                     <td class="px-6 py-4">
                                                         @if ($document->type == 'pdf')
@@ -322,7 +320,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-
+                                    
                                 </div>
                             </div>
                         </div>
@@ -383,7 +381,7 @@
             </button>
         </div>
     @endif
-
+    
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 text-center py-6 w-full">
         <p>&copy; 2025 DCTC-eDoc - Tous droits réservés.</p>
@@ -423,11 +421,11 @@
         }, 5000); // 10000ms = 10 secondes
     </script>
 
-    <!--script qui prend en charge le drag & drop sur un dossier ou service   -->
-    <script>
-        // Sélectionne toutes les divs avec la classe .iconFile
+ <!--script qui prend en charge le drag & drop sur un dossier ou service   -->
+<script>
+            // Sélectionne toutes les divs avec la classe .iconFile
         const dropzoneService = document.querySelectorAll('.iconButton');
-        const openModalDoc = document.querySelector('.openModalDoc');
+        const openModalDoc= document.querySelector('.openModalDoc');
         let fileTotal;
 
         // Fonction pour empêcher le comportement par défaut
@@ -450,8 +448,8 @@
                 element.classList.remove("grossirDrag");
             });
 
-
-
+            
+            
 
             element.addEventListener('drop', (e) => {
                 element.classList.remove("grossirDrag");
@@ -461,36 +459,37 @@
                 e.preventDefault();
                 let checkbox = document.querySelector(`#service-checkbox-${serviceId}`);
                 if (checkbox) {
-
+                    
                     checkbox.click() // Ajoute l'attribut checked  
-
+                    
                 }
-
-
+                
+                
                 const dt = e.dataTransfer;
                 const files = dt.files;
 
-                if (files.length) {
+            if (files.length) {
                     // Simule un "drop" sur `.dropzone`
-                    if (dropzone) {
-                        [...files].forEach(file => {
-
-                            const dropEvent = new DragEvent("drop", {
-                                bubbles: true,
-                                cancelable: true,
-                                dataTransfer: new DataTransfer()
-                            });
-                            dropEvent.dataTransfer.items.add(file);
-                            dropzone.dispatchEvent(dropEvent);
-                        });
-                        fileTotal = files.length
-
-                    } else {
-                        console.error("Aucune dropzone trouvée.");
-                    }
+            if (dropzone) {
+            [...files].forEach(file => {
+                
+                const dropEvent = new DragEvent("drop", {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: new DataTransfer()
+                });
+                dropEvent.dataTransfer.items.add(file);
+                dropzone.dispatchEvent(dropEvent);
+            });
+            fileTotal=files.length
+            
+        } else {
+            console.error("Aucune dropzone trouvée.");
+        }
                 }
             });
         });
-    </script>
+
+</script>
 
 </x-app-layout>

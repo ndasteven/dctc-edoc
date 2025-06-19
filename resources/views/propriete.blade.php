@@ -189,13 +189,13 @@
                         </button>
 
                         <!-- Dropdown menu -->
-                        <div id="dropdownSecurity"
+                        <div id="dropdownSecurity" 
                             class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
                             style="width: 62%">
                             <ul class="py-2 text-sm text-white dark:text-gray-200 "
                                 aria-labelledby="dropdownSecurityButton">
                                 <li class="bg-blue-400">
-                                    <a href="#"
+                                    <a href="#" @click="openPermission"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600 ">
                                         Gérer les permissions
                                     </a>
@@ -220,191 +220,12 @@
                 </div>
             </div>
 
-            <!-- Modal pour gérer les permissions -->
-
-            {{-- 
-<div id="permissionModal"
-    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-3/4 max-h-[85vh] overflow-y-auto">
-        <!-- Informations sur le dossier -->
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Informations du dossier</h2>
-            @if ($infoPropriete)
-                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
-                    <div>
-                        <dt class="font-medium text-gray-500">Nom :</dt>
-                        <dd class="mt-1">{{ $infoPropriete->name ?? $infoPropriete->nom ?? 'Aucun nom' }}</dd>
-                    </div>
-
-                    <div>
-                        <dt class="font-medium text-gray-500">Auteur :</dt>
-                        <dd class="mt-1">
-                            {{ optional($infoPropriete->user)->name ?? 'Utilisateur supprimé' }}
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt class="font-medium text-gray-500">Date de création :</dt>
-                        <dd class="mt-1">
-                            {{ $infoPropriete->created_at->format('d-m-Y à H:i:s') }}
-                        </dd>
-                    </div>
-                </dl>
-            @else
-                <div role="status" class="max-w-sm animate-pulse mt-4">
-                    <div class="h-3 bg-gray-200 rounded-full dark:bg-gray-700 mb-2 w-32"></div>
-                    <div class="h-3 bg-gray-200 rounded-full dark:bg-gray-700 mb-2 w-40"></div>
-                    <div class="h-3 bg-gray-200 rounded-full dark:bg-gray-700 w-28"></div>
-                    <span class="sr-only">Chargement...</span>
-                </div>
-            @endif
-        </div>
-
-        <!-- Champ caché pour stocker l'ID du dossier -->
-        <input type="hidden" id="currentFolderId" value="{{ $infoPropriete->id ?? '' }}">
-
-        <!-- Formulaire : Permissions utilisateurs -->
-        <form id="permissionsForm">
-            <h3 class="text-lg font-semibold mb-3">Gérer les permissions</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilisateur</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permission</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersPermissionsList" class="divide-y divide-gray-200 bg-white">
-                        <!-- Utilisateurs ajoutés dynamiquement ici -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-6 flex justify-end space-x-3">
-                <button type="button" onclick="closeModal()"
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Annuler</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Enregistrer</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<style>
-    .modal-open {
-        overflow: hidden;
-    }
-</style>
-
-<script>
-    let currentFolderId = null;
-
-    // Charger les utilisateurs via AJAX
-    function loadUsers() {
-        const container = document.getElementById('usersPermissionsList');
-        container.innerHTML = `
-            <tr><td colspan="2" class="text-center py-4 text-gray-500">Chargement...</td></tr>
-        `;
-
-        fetch('/api/users')
-            .then(response => response.json())
-            .then(users => {
-                container.innerHTML = '';
-                users.forEach(user => {
-                    const row = document.createElement('tr');
-
-                    row.innerHTML = `
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${user.name}</td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm">
-                            <select name="perm_${user.id}" class="permissionSelect w-full px-3 py-2 border border-gray-300 rounded-md">
-                                <option value="">Aucune permission</option>
-                                <option value="read">Lecture</option>
-                                <option value="write">Écriture</option>
-                                <option value="read_write">Lecture & Écriture</option>
-                            </select>
-                        </td>
-                    `;
-
-                    container.appendChild(row);
-                });
-            })
-            .catch(err => {
-                console.error("Erreur lors du chargement des utilisateurs :", err);
-                container.innerHTML = `
-                    <tr><td colspan="2" class="text-center py-4 text-red-500">Erreur de chargement.</td></tr>
-                `;
-            });
-    }
-
-    // Ouvrir le modal en passant l'ID du dossier
-    function openModal(folderId) {
-        document.getElementById('currentFolderId').value = folderId;
-        loadUsers();
-
-        document.getElementById('permissionModal').classList.remove('hidden');
-        document.body.classList.add('modal-open');
-    }
-
-    // Fermer le modal
-    function closeModal() {
-        document.getElementById('permissionModal').classList.add('hidden');
-        document.body.classList.remove('modal-open');
-        document.getElementById('usersPermissionsList').innerHTML = '';
-    }
-
-    // Soumission du formulaire
-    document.getElementById('permissionsForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const selects = document.querySelectorAll('.permissionSelect');
-        const folderId = document.getElementById('currentFolderId').value;
-        
-        // Récupérer le nom du dossier depuis l'affichage
-        const folderName = document.querySelector('dd').textContent || 'Dossier inconnu';
-
-        const permissions = {
-            folder_id: parseInt(folderId),
-            users: {}
-        };
-
-        const usersWithPermissions = [];
-
-        selects.forEach(select => {
-            if (select.value) {
-                const userId = select.name.replace('perm_', '');
-                const userName = select.closest('tr').querySelector('td:first-child').textContent;
-                permissions.users[userId] = select.value;
-                usersWithPermissions.push(userName);
-            }
-        });
-
-        console.log('Permissions sauvegardées :', permissions);
-        
-        if (usersWithPermissions.length > 0) {
-            alert(`Permissions enregistrées pour le dossier "${folderName}" avec les utilisateurs : ${usersWithPermissions.join(', ')}`);
-        } else {
-            alert(`Aucune permission définie pour le dossier "${folderName}"`);
-        }
-        
-        closeModal();
-    });
-
-    // Exemple d'événement pour ouvrir le modal via dropdown
-    document.querySelector('#dropdownSecurity li.bg-blue-400 a')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        const folderId = document.getElementById('currentFolderId').value;
-        if (folderId) {
-            openModal(folderId);
-        } else {
-            alert("Impossible d'ouvrir le modal : Aucun dossier sélectionné.");
-        }
-    });
-</script> --}}
+            
 
 
-            <div id="permissionModal"
-                class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-3/4 max-h-[85vh] overflow-y-auto">
+            <div id="permissionModal"  wire:ignore.self
+                class="fixed hidden inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-center">
+                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl  max-h-[85vh] overflow-y-auto">
                     <!-- Informations sur le dossier -->
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Informations du dossier</h2>
@@ -445,27 +266,62 @@
 
                     <!-- Formulaire : Permissions utilisateurs -->
                     <form id="permissionsForm">
-                        <h3 class="text-lg font-semibold mb-3">Gérer les permissions</h3>
+                        <div class="grid grid-cols md:grid-cols-2">
+                         <div>
+                            <h3 class="text-lg font-semibold mb-3">Gérer les permissions</h3>
+                         </div>
+                        <div>
+                            <label for="small-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rechercher un utilisateur</label>
+                            <input wire:model="query" wire:keydown.debounce.500ms="searchUser" type="text" id="small-input" class="block p-2 mb-2 w-full text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>   
+                        </div>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
+                            <table class="min-w-full  text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
                                         <th
-                                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             Utilisateur</th>
                                         <th
-                                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             Permission</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersPermissionsList" class="divide-y divide-gray-200 bg-white">
                                     <!-- Utilisateurs ajoutés dynamiquement ici -->
+                                    @if ($allUsers)
+                                    
+                                    @foreach ($allUsers as $user)
+                                    <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
+                                        <td class="px-2 py-2">{{ $user->name }}</td>
+                                        <td class="flex justify-end px-2 py-2">
+                                            <div class="flex">
+                                                <div class="flex items-center me-4 ">
+                                                    <input id="inline-radio-{{ $user->id }}" type="radio" value="" name="inline-radio-{{ $user->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                                    <label for="inline-radio-{{ $user->id }}" class=" text-sm font-medium text-gray-900 dark:text-gray-300">Lecture</label>
+                                                </div>
+                                                <div class="flex items-center me-4 ml-2">
+                                                    <input id="inline-2-radio-{{ $user->id }}" type="radio" value="" name="inline-radio-{{ $user->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                                    <label for="inline-2-radio-{{ $user->id }}" class=" text-sm font-medium text-gray-900 dark:text-gray-300">Ecriture</label>
+                                                </div>
+                                                <div class="flex items-center me-4 ml-2">
+                                                    <input  id="inline-checked-radio-{{ $user->id }}" type="radio" value="" name="inline-radio-{{ $user->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                                    <label for="inline-checked-radio-{{ $user->id }}" class=" text-sm font-medium text-gray-900 dark:text-gray-300">Lecture/ecriture</label>
+                                                </div>
+                                            </div>
+
+                                        </td>
+                                    </tr>
+                                        
+                                    @endforeach   
+                                    @endif
+                                    
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" onclick="closeModal()"
+                            <button type="button" @click="closePermission"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Annuler</button>
                             <button type="submit"
                                 class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Enregistrer</button>
@@ -479,117 +335,6 @@
                     overflow: hidden;
                 }
             </style>
-
-            <script>
-                let currentFolderId = null;
-
-                // Charger les utilisateurs via AJAX
-                function loadUsers() {
-                    const container = document.getElementById('usersPermissionsList');
-                    container.innerHTML = `
-                    <tr><td colspan="2" class="text-center py-4 text-gray-500">Chargement...</td></tr>
-                `;
-
-                            fetch('/api/users')
-                                .then(response => response.json())
-                                .then(users => {
-                                    container.innerHTML = '';
-                                    users.forEach(user => {
-                                        const row = document.createElement('tr');
-
-                                        row.innerHTML = `
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${user.name}</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">
-                                    <select name="perm_${user.id}" class="permissionSelect w-full px-3 py-2 border border-gray-300 rounded-md">
-                                        <option value="">Aucune permission</option>
-                                        <option value="read">Lecture</option>
-                                        <option value="write">Écriture</option>
-                                        <option value="read_write">Lecture & Écriture</option>
-                                    </select>
-                                </td>
-                            `;
-
-                                        container.appendChild(row);
-                                    });
-                                })
-                                .catch(err => {
-                                    console.error("Erreur lors du chargement des utilisateurs :", err);
-                                    container.innerHTML = `
-                            <tr><td colspan="2" class="text-center py-4 text-red-500">Erreur de chargement.</td></tr>
-                        `;
-                                });
-                        }
-
-                // Ouvrir le modal en passant l'ID du dossier
-                function openModal(folderId) {
-                    document.getElementById('currentFolderId').value = folderId;
-                    loadUsers();
-
-                    document.getElementById('permissionModal').classList.remove('hidden');
-                    document.body.classList.add('modal-open');
-                }
-
-                // Fermer le modal
-                function closeModal() {
-                    document.getElementById('permissionModal').classList.add('hidden');
-                    document.body.classList.remove('modal-open');
-                    document.getElementById('usersPermissionsList').innerHTML = '';
-                }
-
-                // Soumission du formulaire
-                document.getElementById('permissionsForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    const selects = document.querySelectorAll('.permissionSelect');
-                    const folderId = document.getElementById('currentFolderId').value;
-
-                    // Récupérer le nom du dossier depuis l'affichage
-                    const folderName = document.querySelector('dd').textContent || 'Dossier inconnu';
-
-                    const permissions = {
-                        folder_id: parseInt(folderId),
-                        users: {}
-                    };
-
-                    const usersWithPermissions = [];
-
-                    selects.forEach(select => {
-                        if (select.value) {
-                            const userId = select.name.replace('perm_', '');
-                            const userName = select.closest('tr').querySelector('td:first-child').textContent;
-                            const permissionText = select.options[select.selectedIndex].text;
-                            permissions.users[userId] = select.value;
-                            usersWithPermissions.push(`${userName} (${permissionText})`);
-                        }
-                    });
-
-                    console.log('Permissions sauvegardées :', permissions);
-
-                    if (usersWithPermissions.length > 0) {
-                        alert(
-                            `📁 Dossier : "${folderName}"\n\n👤 Utilisateurs :\n${usersWithPermissions.join('\n')}\n\n✅ Permissions enregistrées avec succès !`
-                        );
-
-                        // alert(`Permissions enregistrées pour le dossier "${folderName}"\nnom :\n${usersWithPermissions.join('\n')}`);
-                    } else {
-                        alert(`Aucune permission définie pour le dossier "${folderName}"`);
-                    }
-
-                    closeModal();
-                });
-
-                // Exemple d'événement pour ouvrir le modal via dropdown
-                document.querySelector('#dropdownSecurity li.bg-blue-400 a')?.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const folderId = document.getElementById('currentFolderId').value;
-                    if (folderId) {
-                        openModal(folderId);
-                    } else {
-                        alert("Impossible d'ouvrir le modal : Aucun dossier sélectionné.");
-                    }
-                });
-            </script>
-
             <!-- Modal verrouillage -->
 
             <button data-modal-target="modal-verrou" id="openModalVerrou" data-modal-toggle="modal-verrou">
@@ -677,10 +422,17 @@
     function openModalVerrou() {
         document.getElementById('openModalVerrou').click()
     }
+    function openPermission(){
+        document.getElementById('permissionModal').classList.remove("hidden")
+    }
+    function closePermission(){
+      document.getElementById('permissionModal').classList.add("hidden")  
+    }
     document.addEventListener('errorVerrou', () => {
         alert('error')
     })
     document.addEventListener('successVerrou', () => {
         alert('success')
     })
+    
 </script>

@@ -29,13 +29,4 @@ class folder extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    // app/Models/Folder.php
-
-public function users()
-{
-    return $this->belongsToMany(User::class, 'folder_user_permission')
-                ->withPivot('permission')
-                ->withTimestamps();
-}
 }

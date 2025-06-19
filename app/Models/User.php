@@ -102,12 +102,5 @@ class User extends Authenticatable
 {
     return $this->hasMany(folder::class);
 }
-// app/Models/User.php
 
-public function folders()
-{
-    return $this->belongsToMany(Folder::class, 'folder_user_permission')
-                ->withPivot('permission')
-                ->withTimestamps();
-}
 }
