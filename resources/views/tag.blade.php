@@ -96,52 +96,62 @@
 
     <!-- JS suggestions -->
     <script>
-        const users = @json($users_tag->pluck('email')->toArray());
-        const userInput = document.getElementById("user-input");
-        const userDropdown = document.getElementById("user-dropdown");
+    const users = @json($users_tag->map(function ($u) {
+        return [
+            'name' => $u->name,
+            'email' => $u->email
+        ];
+    }));
 
-        const showSuggestions = (query) => {
-            userDropdown.innerHTML = "";
-            const matches = users.filter(user => user.toLowerCase().includes(query.toLowerCase()));
-            if (matches.length === 0) {
+    const userInput = document.getElementById("user-input");
+    const userDropdown = document.getElementById("user-dropdown");
+
+    const showSuggestions = (query) => {
+        userDropdown.innerHTML = "";
+        const matches = users.filter(user =>
+            user.name.toLowerCase().includes(query.toLowerCase()) ||
+            user.email.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (matches.length === 0) {
+            userDropdown.classList.add("hidden");
+            return;
+        }
+
+        matches.forEach(user => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${user.name}</strong> - <span class="text-sm text-gray-500">${user.email}</span>`;
+            li.className = "p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600";
+            li.addEventListener("click", () => {
+                const inputValue = userInput.value.trim();
+                const parts = inputValue.split(" ");
+                parts.pop(); // Supprimer le mot partiellement tapé
+                parts.push(user.email); // Ajouter uniquement l'email
+                userInput.value = parts.join(" ") + " ";
                 userDropdown.classList.add("hidden");
-                return;
-            }
-
-            matches.forEach(user => {
-                const li = document.createElement("li");
-                li.textContent = user;
-                li.className = "p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600";
-                li.addEventListener("click", () => {
-                    const current = userInput.value.trim();
-                    const emails = current.split(" ").filter(e => e);
-                    if (!emails.includes(user)) {
-                        emails.push(user);
-                        userInput.value = emails.join(" ") + " ";
-                    }
-                    userDropdown.classList.add("hidden");
-                });
-                userDropdown.appendChild(li);
             });
-
-            userDropdown.classList.remove("hidden");
-        };
-
-        userInput.addEventListener("input", (e) => {
-            const value = e.target.value.trim().split(" ").pop();
-            if (value.length > 0) {
-                showSuggestions(value);
-            } else {
-                userDropdown.classList.add("hidden");
-            }
+            userDropdown.appendChild(li);
         });
 
-        document.addEventListener("click", (e) => {
-            if (!userDropdown.contains(e.target) && e.target !== userInput) {
-                userDropdown.classList.add("hidden");
-            }
-        });
-    </script>
+        userDropdown.classList.remove("hidden");
+    };
+
+    userInput.addEventListener("input", (e) => {
+        const value = e.target.value.trim().split(" ").pop();
+        if (value.length > 0) {
+            showSuggestions(value);
+        } else {
+            userDropdown.classList.add("hidden");
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!userDropdown.contains(e.target) && e.target !== userInput) {
+            userDropdown.classList.add("hidden");
+        }
+    });
+</script>
+
 
     <script>
         setTimeout(() => {
