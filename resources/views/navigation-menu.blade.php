@@ -1,5 +1,13 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
+    <!-- Modal de confirmation -->
+    @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+            class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded shadow-lg z-50 transition transform duration-300 ease-in-out"
+            style="background-color: #10B981; color: white;">
+            {{ session('success') }}
+        </div>
+    @endif
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">

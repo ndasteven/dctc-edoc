@@ -86,7 +86,7 @@
                 <!-- Partie droite (Actions) -->
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 col-span-2">
                     @if ($docClickPropriete == 'folder')
-                        <button
+                        <button 
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
