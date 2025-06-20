@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\DocumentController;
+
+use App\Http\Controllers\UserPermissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
@@ -98,3 +100,36 @@ Route::get('/folders/{folderId?}', function (?int $folderId = null) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Route::post('/permissions', [UserPermissionController::class, 'store'])->name('permissions.store');
+// Route::post('/permissions/update', [UserPermissionController::class, 'update'])->name('permissions.update');

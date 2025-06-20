@@ -224,14 +224,7 @@
                 <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl  max-h-[85vh] overflow-y-auto">
                     <!-- Informations sur le dossier -->
                     <div class="mb-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Informations du dossier</h2>
-                            <button type="button" @click="closePermission"
-                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
-                                Annuler
-                            </button>
-                        </div>
-
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Informations du dossier</h2>
                         @if ($infoPropriete)
                             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
                                 <div>
@@ -254,7 +247,6 @@
                                         {{ $infoPropriete->created_at->format('d-m-Y à H:i:s') }}
                                     </dd>
                                 </div>
-
                             </dl>
                         @else
                             <div role="status" class="max-w-sm animate-pulse mt-4">
@@ -299,188 +291,143 @@
                                 </tr>
                             </thead>
                             <tbody id="usersPermissionsList" class="divide-y divide-gray-200 bg-white">
+                                <!-- Utilisateurs ajoutés dynamiquement ici -->
                                 @if ($allUsers)
+
                                     @foreach ($allUsers as $user)
-                                        <thead>
-                                            {{-- <div class="mb-4">
-                                                <label for="user"
-                                                    class="block text-sm font-medium text-gray-700 mb-1">Utilisateur</label>
-                                                <p class="text-sm text-gray-900">{{ old('user', $user->name) }}</p>
-                                                <p class="text-sm text-gray-500">ID : {{ old('user_id', $user->id) }}
-                                                </p>
-
-                                                @error('user')
-                                                    <span class="text-red-600 text-sm mt-1">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-
-                                                <label for="folder_id"
-                                                    class="block text-sm font-medium text-gray-700 mb-1">ID du
-                                                    Dossier</label>
-                                                <p class="text-sm text-gray-900">
-                                                    {{ $infoPropriete->name ?? ($infoPropriete->nom ?? 'Aucun nom') }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">ID : {{ $infoPropriete->id ?? '' }}
-                                                </p>
-
-                                                @error('folder_id')
-                                                    <span class="text-red-600 text-sm mt-1">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div> --}}
-                                            <div class="flex gap-6 mb-4">
-                                                <!-- Bloc Utilisateur -->
-                                                <div class="w-1/2">
-                                                    <label for="user"
-                                                        class="block text-sm font-medium text-gray-700 mb-1">Utilisateur</label>
-                                                    <p class="text-sm text-gray-900">{{ old('user', $user->name) }}
-                                                    </p>
-                                                    {{-- <p class="text-sm text-gray-500">ID :
-                                                        {{ old('user_id', $user->id) }}</p> --}}
-
-                                                    @error('user')
-                                                        <span class="text-red-600 text-sm mt-1">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </div>
-
-                                                <!-- Bloc Dossier -->
-                                                <div class="w-1/2">
-                                                    <label for="folder_id"
-                                                        class="block text-sm font-medium text-gray-700 mb-1">
-                                                        Dossier/Fichier</label>
-                                                    <p class="text-sm text-gray-900">
-                                                        {{ $infoPropriete->name ?? ($infoPropriete->nom ?? 'Aucun nom') }}
-                                                    </p>
-                                                    {{-- <p class="text-sm text-gray-500">ID :
-                                                        {{ $infoPropriete->id ?? '' }}</p> --}}
-
-                                                    @error('folder_id')
-                                                        <span class="text-red-600 text-sm mt-1">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
-                                        </thead>
-                                        <tr class="odd:bg-white even:bg-gray-50 border-b border-gray-200">
-                                            <td class="px-4 py-2">{{ $user->name }} </td>
-                                            <td class="px-4 py-2 text-right">
-
-                                                {{-- <form method="POST" action="{{ route('permissions.store') }}">
-                                                    @csrf
-
-                                                    <!-- Champs cachés -->
-                                                    <input type="hidden" name="user_id"
-                                                        value="{{ $user->id }}">
-                                                    <input type="hidden" name="folder_id"
-                                                        value="{{ $infoPropriete->id }}">
-                                                    <input type="hidden" name="user"
-                                                        value="{{ $user->name }}">
-                                                    <input type="hidden" name="folder"
-                                                        value="{{ $infoPropriete->name ?? ($infoPropriete->nom ?? 'Aucun nom') }}">
-
-                                                    <!-- Radio buttons -->
-                                                    <div class="inline-flex items-center space-x-4 mr-4">
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="L"
-                                                                class="form-radio h-4 w-4 text-blue-600" checked>
-                                                            <span class="ml-2">Lecture</span>
-                                                        </label>
-
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="E"
-                                                                class="form-radio h-4 w-4 text-blue-600">
-                                                            <span class="ml-2">Écriture</span>
-                                                        </label>
-
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="LE"
-                                                                class="form-radio h-4 w-4 text-blue-600">
-                                                            <span class="ml-2">Lecture/Écriture</span>
-                                                        </label>
-                                                    </div>
-
-                                                    <!-- Bouton submit -->
-                                                    <button type="submit"
-                                                        class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">
-                                                        Enregistrer
-                                                    </button>
-                                                </form> --}}
+                                        <tr
+                                            class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
+                                            <td class="px-2 py-2">{{ $user->name }}</td>
+                                            <td class="flex justify-end px-2 py-2">
+                                               
                                                 <form method="POST" action="{{ route('permissions.store') }}">
                                                     @csrf
 
-                                                    <!-- Champs cachés conditionnels -->
-                                                    <input type="hidden" name="user_id"
-                                                        value="{{ $user->id }}">
-                                                    <input type="hidden" name="user"
-                                                        value="{{ $user->name }}">
+                                                    <div class="row mb-3">
+                                                        <label for="user"
+                                                            class="col-md-4 col-form-label text-md-end">Utilisateur</label>
 
-                                                    <!-- Si on est sur un dossier -->
-                                                    @if (isset($infoPropriete) && $infoPropriete instanceof \App\Models\Folder)
-                                                        <input type="hidden" name="folder_id"
-                                                            value="{{ $infoPropriete->id }}">
-                                                        <input type="hidden" name="folder"
-                                                            value="{{ $infoPropriete->name }}">
+                                                        <div class="col-md-6">
+                                                            <input id="user" type="text"
+                                                                class=" @error('user') is-invalid @enderror"
+                                                                name="user"
+                                                                value="{{ old('user', $user->name) }}"
+                                                                required>
+                                                                {{--  --}}
 
-                                                        <!-- Si on est sur un document -->
-                                                    @elseif(isset($infoPropriete) && $infoPropriete instanceof \App\Models\Document)
-                                                        <input type="hidden" name="document_id"
-                                                            value="{{ $infoPropriete->id }}">
-                                                        <input type="hidden" name="document"
-                                                            value="{{ $infoPropriete->name }}">
-                                                    @endif
+                                                                 <input id="user" type="number"
+                                                                class="form-control @error('user_id') is-invalid @enderror"
+                                                                name="user_id"
+                                                                value="{{ old('user_id', $user->id) }}"
+                                                                required>
 
-                                                    <!-- Radio buttons -->
-                                                    <div class="inline-flex items-center space-x-4 mr-4">
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="L"
-                                                                class="form-radio h-4 w-4 text-blue-600" checked>
-                                                            <span class="ml-2">Lecture</span>
-                                                        </label>
-
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="E"
-                                                                class="form-radio h-4 w-4 text-blue-600">
-                                                            <span class="ml-2">Écriture</span>
-                                                        </label>
-
-                                                        <label class="inline-flex items-center">
-                                                            <input type="radio" name="permission" value="LE"
-                                                                class="form-radio h-4 w-4 text-blue-600">
-                                                            <span class="ml-2">Lecture/Écriture</span>
-                                                        </label>
+                                                            @error('user')
+                                                                <span class="invalid-feedback" role="alert">
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
+                                                            @enderror
+                                                        </div>
                                                     </div>
 
-                                                    <!-- Bouton submit -->
-                                                    <button type="submit"
-                                                        class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">
-                                                        Enregistrer
-                                                    </button>
+                                                    <div class="row mb-3">
+                                                        <label for="folder_id"
+                                                            class="col-md-4 col-form-label text-md-end">ID du
+                                                            Dossier</label>
+
+                                                        <div class="col-md-6">
+                                                            <input id="folder_id" type="text"
+                                                                class="form-control @error('folder') is-invalid @enderror"
+                                                                name="folder"
+                                                               value="{{ $infoPropriete->name ?? '' }}"
+                                                                required min="1">
+
+                                                            {{--  --}}
+                                                            <input id="folder_id" type="number"
+                                                                class="form-control @error('folder_id') is-invalid @enderror"
+                                                                name="folder_id"
+                                                               value="{{ $infoPropriete->id ?? '' }}"
+                                                                required min="1">
+
+                                                            @error('folder_id')
+                                                                <span class="invalid-feedback" role="alert">
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mb-3">
+                                                        <label
+                                                            class="col-md-4 col-form-label text-md-end">Permission</label>
+
+                                                        <div class="col-md-6">
+                                                            <div class="form-check">
+                                                                <input
+                                                                    class="form-check-input @error('permission') is-invalid @enderror"
+                                                                    type="radio" name="permission" id="lecture"
+                                                                    value="L"
+                                                                    {{ old('permission') == 'L' ? 'checked' : '' }}
+                                                                    required checked>
+                                                                <label class="form-check-label" for="lecture">
+                                                                    Lecture (L)
+                                                                </label>
+                                                            </div>
+
+                                                            <div class="form-check">
+                                                                <input
+                                                                    class="form-check-input @error('permission') is-invalid @enderror"
+                                                                    type="radio" name="permission" id="ecriture"
+                                                                    value="E"
+                                                                    {{ old('permission') == 'E' ? 'checked' : '' }}
+                                                                    required>
+                                                                <label class="form-check-label" for="ecriture">
+                                                                    Écriture (E)
+                                                                </label>
+                                                            </div>
+
+                                                            <div class="form-check">
+                                                                <input
+                                                                    class="form-check-input @error('permission') is-invalid @enderror"
+                                                                    type="radio" name="permission"
+                                                                    id="lecture_ecriture" value="LE"
+                                                                    {{ old('permission') == 'LE' ? 'checked' : '' }}
+                                                                    required>
+                                                                <label class="form-check-label"
+                                                                    for="lecture_ecriture">
+                                                                    Lecture/Écriture (LE)
+                                                                </label>
+                                                            </div>
+
+                                                            @error('permission')
+                                                                <span class="invalid-feedback d-block" role="alert">
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mb-0">
+                                                        <div class="col-md-6 offset-md-4">
+                                                            <button type="submit" class="btn btn-primary">
+                                                                Enregistrer
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </form>
 
                                             </td>
                                         </tr>
                                     @endforeach
-                                @else
-                                    <tr>
-                                        <td colspan="2" class="text-center py-4">Aucun utilisateur trouvé.</td>
-                                    </tr>
                                 @endif
                             </tbody>
-
                         </table>
                     </div>
-                    {{-- <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" 
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" @click="closePermission"
                             class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Annuler</button>
                         <button type="submit"
                             class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Enregistrer</button>
-                    </div> --}}
+                    </div>
 
                 </div>
             </div>

@@ -26,35 +26,21 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'service_id',
-        'role_id',
-        'services_identifications'
-    ];
+    protected $fillable = ['name', 'email', 'password', 'service_id', 'role_id', 'services_identifications'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
-    ];
+    protected $hidden = ['password', 'remember_token', 'two_factor_recovery_codes', 'two_factor_secret'];
 
     /**
      * The accessors to append to the model's array form.
      *
      * @var array<int, string>
      */
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    protected $appends = ['profile_photo_url'];
 
     /**
      * Get the attributes that should be cast.
@@ -89,7 +75,8 @@ class User extends Authenticatable
         return $this->belongsToMany(Document::class)->withPivot('tagger')->withTimestamps();
     }
 
-    public function identificate(){
+    public function identificate()
+    {
         return $this->belongsToMany(Service::class, 'service_users_identification', 'user_id', 'services_id')->withTimestamps();
     }
 
@@ -99,8 +86,12 @@ class User extends Authenticatable
     }
 
     public function folder()
-{
-    return $this->hasMany(folder::class);
-}
+    {
+        return $this->hasMany(folder::class);
+    }
 
+    public function permissions(): HasMany
+    {
+        return $this->hasMany(UserPermission::class);
+    }
 }
