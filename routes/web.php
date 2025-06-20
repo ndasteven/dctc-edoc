@@ -98,38 +98,6 @@ Route::get('/folders/{folderId?}', function (?int $folderId = null) {
     )->middleware('checklicence')->name('show_docs');});
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    //  Route pour la gestion des permission: ajouter une permition et ou la mettre a jour
 Route::post('/permissions', [UserPermissionController::class, 'store'])->name('permissions.store');
 // Route::post('/permissions/update', [UserPermissionController::class, 'update'])->name('permissions.update');
