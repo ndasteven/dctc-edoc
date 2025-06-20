@@ -86,19 +86,9 @@
                 <!-- Partie droite (Actions) -->
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 col-span-2">
                     @if ($docClickPropriete == 'folder')
-                        {{-- <button
+                        <button @click="openModalVerrou"
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Créer Dossier</span>
-                        </button> --}}
-                        <!-- Créer Dossier -->
-                        <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled" onclick="openCreateFolderModal()">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -106,7 +96,7 @@
                             <span>Créer Dossier</span>
                         </button>
 
-                        {{-- <button
+                        <button
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
@@ -114,31 +104,11 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4m4-4h12v12H8z" />
                             </svg>
                             <span>Ajouter Document</span>
-                        </button> --}}
-                        <!-- Ajouter Document -->
-                        <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled" onclick="openAddDocumentModal()">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4m4-4h12v12H8z" />
-                            </svg>
-                            <span>Ajouter Document</span>
                         </button>
                     @endif
-                    {{-- <button
-                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                        <span>Renommer</span>
-                    </button> --}}
-                    <!-- Renommer -->
                     <button
                         class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled" onclick="openRenameModal()">
+                        wire:loading.attr="disabled">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -173,20 +143,9 @@
 
                     </button>
 
-                    {{-- <button
-                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M20 13V5a2 2 0 00-2-2H6a2 2 0 00-2 2v8M4 17h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
-                        </svg>
-                        <span>Archiver</span>
-                    </button> --}}
-                    <!-- Archiver -->
                     <button
                         class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled" onclick="openArchiveModal()">
+                        wire:loading.attr="disabled">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -242,29 +201,16 @@
                                     </a>
                                 </li>
                                 <hr>
-                                {{-- <li>
+                                <li>
                                     <a href="#"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
-                                        Voir l’historique d’accès
-                                    </a>
-                                </li> --}}
-
-                                <li>
-                                    <a href="#" @click="showModal = true" onclick="openAccessHistoryModal()"
-                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
                                         Voir l’historique d’accès
                                     </a>
                                 </li>
                                 <hr>
-                                {{-- <li>
+                                <li>
                                     <a href="#"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
-                                        Restreindre les utilisateurs
-                                    </a>
-                                </li> --}}
-                                <li>
-                                    <a href="#" onclick="openRestrictUserModal()"
-                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
                                         Restreindre les utilisateurs
                                     </a>
                                 </li>
@@ -405,7 +351,7 @@
                                                 <div class="w-1/2">
                                                     <label for="folder_id"
                                                         class="block text-sm font-medium text-gray-700 mb-1">
-                                                        Dossier/Fichier Selectionné</label>
+                                                        Dossier/Fichier</label>
                                                     <p class="text-sm text-gray-900">
                                                         {{ $infoPropriete->name ?? ($infoPropriete->nom ?? 'Aucun nom') }}
                                                     </p>
@@ -544,12 +490,9 @@
                     overflow: hidden;
                 }
             </style>
-
             <!-- Modal verrouillage -->
-
             <button data-modal-target="modal-verrou" id="openModalVerrou" data-modal-toggle="modal-verrou">
             </button>
-
             <div wire:ignore.self id="modal-verrou" tabindex="-1"
                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                 <div class="relative p-4 w-full max-w-md max-h-full">
@@ -623,220 +566,11 @@
                 </div>
             </div>
             <!-- Fin Modal verrouillage -->
-
-
-
-
-            <!-- Modal : Historique d'accès -->
-            <div id="accessHistoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <!-- Overlay -->
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeAccessHistoryModal()"></div>
-
-                <!-- Contenu du modal -->
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">Historique d’accès</h2>
-                        <button onclick="closeAccessHistoryModal()" class="text-gray-500 text-2xl">&times;</button>
-                    </div>
-
-                    <!-- Contenu -->
-                    <p class="text-gray-700">Bonjour</p>
-
-                    <!-- Bouton fermer -->
-                    <div class="mt-6 text-right">
-                        <button onclick="closeAccessHistoryModal()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Fermer
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal : Restreindre les utilisateurs -->
-            <div id="restrictUserModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <!-- Overlay -->
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeRestrictUserModal()"></div>
-
-                <!-- Contenu du modal -->
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">Restreindre les utilisateurs</h2>
-                        <button onclick="closeRestrictUserModal()" class="text-gray-500 text-2xl">&times;</button>
-                    </div>
-
-                    <!-- Contenu -->
-                    <p class="text-gray-700">Fonctionnalité en développement…</p>
-
-                    <!-- Bouton fermer -->
-                    <div class="mt-6 text-right">
-                        <button onclick="closeRestrictUserModal()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Fermer
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Tous les modaux -->
-            <div id="archiveModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeArchiveModal()"></div>
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <h2 class="text-xl font-bold mb-4">Confirmer l'archivage</h2>
-                    <p>Êtes-vous sûr de vouloir archiver cet élément ?</p>
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <button onclick="closeArchiveModal()"
-                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
-                        <button onclick="confirmArchive()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Archiver</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="renameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeRenameModal()"></div>
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <h2 class="text-xl font-bold mb-4">Renommer</h2>
-                    <input type="text" id="newNameInput" placeholder="Nouveau nom"
-                        class="w-full border rounded px-3 py-2 mb-4">
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <button onclick="closeRenameModal()"
-                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
-                        <button onclick="confirmRename()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Valider</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="createFolderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeCreateFolderModal()"></div>
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <h2 class="text-xl font-bold mb-4">Créer un nouveau dossier</h2>
-                    <input type="text" id="folderNameInput" placeholder="Nom du dossier"
-                        class="w-full border rounded px-3 py-2 mb-4">
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <button onclick="closeCreateFolderModal()"
-                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
-                        <button onclick="confirmCreateFolder()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Créer</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="addDocumentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeAddDocumentModal()"></div>
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <h2 class="text-xl font-bold mb-4">Ajouter un document</h2>
-                    {{-- {{ route('documents.store') }} --}}
-                    <form action="" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <input type="file" name="document_file" class="w-full border rounded px-3 py-2 mb-4">
-                        <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" onclick="closeAddDocumentModal()"
-                                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
-                            <button type="submit"
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Télécharger</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div>
     </div>
+    
 </div>
-
-{{-- <script>
-    function openModalVerrou() {
-        document.getElementById('openModalVerrou').click()
-    }
-
-    function openPermission() {
-        document.getElementById('permissionModal').classList.remove("hidden")
-    }
-
-    function closePermission() {
-        document.getElementById('permissionModal').classList.add("hidden")
-    }
-    document.addEventListener('errorVerrou', () => {
-        alert('error')
-    })
-    document.addEventListener('successVerrou', () => {
-        alert('success')
-    })
-</script> --}}
-
 <script>
-
-
-    // === Fonctions pour les modaux ===
-    function openArchiveModal() {
-        document.getElementById('archiveModal').classList.remove("hidden");
-    }
-
-    function closeArchiveModal() {
-        document.getElementById('archiveModal').classList.add("hidden");
-    }
-
-    function confirmArchive() {
-        alert("Archivage confirmé !");
-        closeArchiveModal();
-    }
-
-    function openRenameModal() {
-        document.getElementById('renameModal').classList.remove("hidden");
-    }
-
-    function closeRenameModal() {
-        document.getElementById('renameModal').classList.add("hidden");
-    }
-
-    function confirmRename() {
-        const newName = document.getElementById('newNameInput').value;
-        if (newName) {
-            alert("Nouveau nom : " + newName);
-            closeRenameModal();
-        }
-    }
-
-    function openCreateFolderModal() {
-        document.getElementById('createFolderModal').classList.remove("hidden");
-    }
-
-    function closeCreateFolderModal() {
-        document.getElementById('createFolderModal').classList.add("hidden");
-    }
-
-    function confirmCreateFolder() {
-        const folderName = document.getElementById('folderNameInput').value;
-        if (folderName) {
-            alert("Dossier créé : " + folderName);
-            closeCreateFolderModal();
-        }
-    }
-
-    function openAddDocumentModal() {
-        document.getElementById('addDocumentModal').classList.remove("hidden");
-    }
-
-    function closeAddDocumentModal() {
-        document.getElementById('addDocumentModal').classList.add("hidden");
-    }
-    // === Fonctions pour restreindre les utilisateurs ===
-    function openRestrictUserModal() {
-        document.getElementById('restrictUserModal').classList.remove("hidden");
-    }
-
-    function closeRestrictUserModal() {
-        document.getElementById('restrictUserModal').classList.add("hidden");
-    }
-    // Fonction appelée au clic sur "Voir l'historique"
-    function openAccessHistoryModal() {
-        document.getElementById('accessHistoryModal').classList.remove("hidden");
-    }
-
-    // Fonction appelée pour fermer le modal
-    function closeAccessHistoryModal() {
-        document.getElementById('accessHistoryModal').classList.add("hidden");
-    }
-
-    // Tes autres fonctions existantes
     function openModalVerrou() {
         document.getElementById('openModalVerrou').click()
     }
@@ -848,11 +582,9 @@
     function closePermission() {
         document.getElementById('permissionModal').classList.add("hidden")
     }
-
     document.addEventListener('errorVerrou', () => {
         alert('error')
     })
-
     document.addEventListener('successVerrou', () => {
         alert('success')
     })
