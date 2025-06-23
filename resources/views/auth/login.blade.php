@@ -90,7 +90,7 @@
           <input
             id="password"
             name="password"
-            placeholder="••••••••"
+            placeholder="••••••••••••••••••••••••••••••••••••••••••••••••••••••••"
             type="password"
             required
             class="border rounded-lg px-3 py-2 text-sm w-full outline-none dark:border-gray-500 dark:bg-gray-900"
