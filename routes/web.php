@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\DocumentController;
+
+use App\Http\Controllers\UserPermissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
@@ -96,5 +98,11 @@ Route::get('/folders/{folderId?}', function (?int $folderId = null) {
     )->middleware('checklicence')->name('show_docs');});
 
 
+    // =================================== route ajoute pas kevin N'doufou
 
+    //  Route pour la gestion des permission: ajouter une permition et ou la mettre a jour
+Route::post('/permissions', [UserPermissionController::class, 'store'])->name('permissions.store');
+// Route::post('/permissions/update', [UserPermissionController::class, 'update'])->name('permissions.update');
 
+Route::get('/permissions/{type}/{id}', [UserPermissionController::class, 'show'])
+    ->name('permissions.show');
