@@ -32,7 +32,8 @@ class FolderManager extends Component
     public $compteFileSelected=0;
     public $confidence = false;
     public $users_confidence = [];
-
+    public $folderId;
+    public $folderCreateId;
     public function removeFile($index)
     {
         if (isset($this->files[$index])) {
@@ -54,7 +55,7 @@ class FolderManager extends Component
     
     public function mount($services=null,$folderId = null)
     { 
-        $this->parentId = $folderId;
+        $this->folderCreateId=$this->parentId = $folderId;
         $this->services = $services;
         
         // Récupérer le chemin depuis la session
@@ -103,12 +104,14 @@ class FolderManager extends Component
         session()->forget('currentFolder');
         return redirect()->to('/documentsFolder/' . $this->SessionService);
     }
+   
     public function createFolder()
     {
+        
         $this->validate(['folderName' => 'required']);
          // Vérifie si un dossier identique existe déjà
         $exists = Folder::where('name', $this->folderName)
-        ->where('parent_id', $this->parentId)
+        ->where('parent_id', $this->folderCreateId)
         ->where('service_id', $this->services?->id)
         ->exists();
 
@@ -117,7 +120,7 @@ class FolderManager extends Component
         } else{
             Folder::create([
                 'name' => $this->folderName,
-                'parent_id' => $this->parentId,
+                'parent_id' => $this->folderCreateId,
                 'service_id' => $this->services?->id, // null si $this->services est null ou pas un objet
                 'user_id' => Auth::id(),
             ]);
@@ -183,7 +186,7 @@ class FolderManager extends Component
        $this->validate(['folderName' => 'required']);
         // Vérifie si un dossier identique existe déjà
        $exists = Folder::where('name', $this->folderName)
-       ->where('parent_id', $this->parentId)
+       ->where('parent_id', $this->folderCreateId)
        ->where('service_id', $this->services?->id)
        ->exists();
        if ($exists) {
@@ -330,7 +333,7 @@ class FolderManager extends Component
             "user_id" => Auth::id(),
             'verrouille' => $this->lock   ,
             'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
-            'folder_id' => $this->clickfolderId,
+            'folder_id' => $this->folderCreateId,
             "confidentiel" => $this->confidence,
         ]);
     
@@ -396,7 +399,7 @@ class FolderManager extends Component
 
      public function getIds($id, $doc){
         if($doc==='folder'){
-            $this->idClickPropriete=$id;
+            $this->folderCreateId=$this->idClickPropriete=$id;
             $this->docClickPropriete=$doc;
             $this->infoPropriete=Folder::where('id', $id)->with('user')->first();            
         }if($doc==='file'){
@@ -409,6 +412,7 @@ class FolderManager extends Component
     public function eraseInfoPropriete(){
         $this->infoPropriete=null;
         $this->docClickPropriete=null;
+        $this->folderCreateId=$this->parentId;
     }
     public function deleteFolder($id){
         

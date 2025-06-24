@@ -1,9 +1,23 @@
 <div class="mx-auto">
     <div class="">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-            @include('createFolder')
+            <div class="bg-gray overflow-hidden shadow-xl sm:rounded-lg flex items-center space-x-4 p-4">
+    <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto" >Création nouveau dossier</p>
+        <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc" 
+            class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                viewBox="0 0 24 24">
+                <path fill-rule="evenodd"
+                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
+                    clip-rule="evenodd" />
+            </svg>
+            Nouveau Dossier
+        </button>
+</div>
+            
             @include('propriete')
+            @include('createFolder')
 
         </div>
     </div>
@@ -154,7 +168,7 @@
                                         </button>
                                     </small>
                                 </li>
-                                <li style="border-top: solid 1px white">
+                                {{-- <li style="border-top: solid 1px white">
                                     <small>
                                         <button @if ($folder->verrouille) disabled @endif href="#"
                                             class="block px-4 py-1 text-white hover:bg-gray-600 hover:text-white  dark:hover:bg-gray-600 dark:hover:text-white inline-flex flex justify-between items-center w-full "
@@ -170,7 +184,7 @@
                                             </svg>
                                         </button>
                                     </small>
-                                </li>
+                                </li> --}}
 
                                 <small>
                                     <li style="border-top: solid 1px white">
@@ -456,7 +470,7 @@
             })
 
 
-            document.getElementById('closePropriete').click()
+            //document.getElementById('closePropriete').click()
             @this.on('folderDeleted', () => {
                 document.getElementById('closePropriete').click()
                 Swal.fire({
@@ -544,6 +558,9 @@
 
     function clickeditFile() {
         document.getElementById('clickeditFile').click()
+    }
+    function clickedcreatefolder() {
+        document.getElementById('createDoc').click()
     }
 
     function clickModalPropriete() {
