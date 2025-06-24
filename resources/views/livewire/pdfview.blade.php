@@ -53,7 +53,7 @@
                         <li><strong>Date de création :</strong> {{ $document->created_at->format('d/m/Y') }}</li>
                     </ul>
 
-                    <div class="inline-flex space-x-2">
+                    <div class="flex flex-col items-center space-y-2 w-ful">
                         <a href="{{ route('tag', $document->id) }}">
                             <button type="button"
                                 class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">

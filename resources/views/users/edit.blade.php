@@ -32,74 +32,96 @@
         </h1>
 
         <form action="{{ route('users.update', $user->id) }}" method="POST" class="space-y-4">
-            @csrf
-            @method('PUT')
-            <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <div class="col-span-2">
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom</label>
-                    <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
-                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                           placeholder="Nom de l'utilisateur" required>
-                    @if ($errors->has('name'))
-                        <span class="text-red-500 text-sm">{{ $errors->first('name') }}</span>
-                    @endif
-                </div>
+    @csrf
+    @method('PUT')
+    <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <!-- Champ nom -->
+        <div class="col-span-2">
+            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom</label>
+            <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                   placeholder="Nom de l'utilisateur" required>
+            @if ($errors->has('name'))
+                <span class="text-red-500 text-sm">{{ $errors->first('name') }}</span>
+            @endif
+        </div>
 
-                <div class="col-span-2">
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Adresse email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                           placeholder="exemple@gmail.com" required>
-                    @if ($errors->has('email'))
-                        <span class="text-red-500 text-sm">{{ $errors->first('email') }}</span>
-                    @endif
-                </div>
+        <!-- Champ email -->
+        <div class="col-span-2">
+            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Adresse email</label>
+            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                   placeholder="exemple@gmail.com" required>
+            @if ($errors->has('email'))
+                <span class="text-red-500 text-sm">{{ $errors->first('email') }}</span>
+            @endif
+        </div>
 
-                <div class="col-span-2 md:col-span-1">
-                    <label for="service" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Service</label>
-                    <select id="service" name="service"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
-                        @foreach($services as $service)
-                            <option value="{{ $service->id }}"
-                                @if($user->service->id == $service->id) selected @endif>
-                                {{ $service->nom }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($errors->has('service'))
-                        <span class="text-red-500 text-sm">{{ $errors->first('service') }}</span>
-                    @endif
-                </div>
+        <!-- Champ service -->
+        <div class="col-span-2">
+            <label for="service" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Service</label>
+            <select id="service" name="service"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                @foreach($services as $service)
+                    <option value="{{ $service->id }}"
+                        @if($user->service->id == $service->id) selected @endif>
+                        {{ $service->nom }}
+                    </option>
+                @endforeach
+            </select>
+            @if ($errors->has('service'))
+                <span class="text-red-500 text-sm">{{ $errors->first('service') }}</span>
+            @endif
+        </div>
+
+        <!-- Champ mot de passe -->
+        <div class="col-span-2 md:col-span-1">
+    <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nouveau mot de passe</label>
+    <input type="password" name="password" id="password"
+           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+           placeholder="••••••••••••••••••••••••••••••••••••••••••••••••••••••••">
+    @if ($errors->has('password'))
+        <span class="text-red-500 text-sm">{{ $errors->first('password') }}</span>
+    @endif
+</div>
+
+<div class="col-span-2 md:col-span-1">
+    <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirmation du mot de passe</label>
+    <input type="password" name="password_confirmation" id="password_confirmation"
+           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+           placeholder="Confirmez le mot de passe">
+</div>
 
 
-                <div class="col-span-2">
-                    <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Choisissez un rôle</label>
-                    <ul class="w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        @foreach($roles as $role)
-                            <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
-                                <div class="flex items-center px-3">
-                                    <input id="role{{ $role->id }}" type="radio" value="{{ $role->id }}" name="role"
-                                           @if($user->role_id == $role->id) checked @endif
-                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                    <label for="role{{ $role->id }}" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ $role->nom }}</label>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                    @if ($errors->has('role'))
-                        <span class="text-red-500 text-sm">{{ $errors->first('role') }}</span>
-                    @endif
-                </div>
+        <!-- Champ rôle -->
+        <div class="col-span-2">
+            <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Choisissez un rôle</label>
+            <ul class="w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                @foreach($roles as $role)
+                    <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
+                        <div class="flex items-center px-3">
+                            <input id="role{{ $role->id }}" type="radio" value="{{ $role->id }}" name="role"
+                                   @if($user->role_id == $role->id) checked @endif
+                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="role{{ $role->id }}" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ $role->nom }}</label>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+            @if ($errors->has('role'))
+                <span class="text-red-500 text-sm">{{ $errors->first('role') }}</span>
+            @endif
+        </div>
+    </div>
 
-            </div>
+    <div class="flex justify-center">
+        <button type="submit"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Mettre à jour les données utilisateur
+        </button>
+    </div>
+</form>
 
-            <div class="flex justify-center">
-                <button type="submit"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    Mettre à jour les données utilisateur
-                </button>
-            </div>
-        </form>
     </div>
 
     <!-- Footer -->

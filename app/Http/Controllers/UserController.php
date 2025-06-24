@@ -77,27 +77,35 @@ class UserController extends Controller
     }
 
 
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
+   public function update(Request $request, $id)
+{
+    $user = User::findOrFail($id);
 
-        // Validation des données
-        $validatedData = $request->validate([
-            'name' => 'required|string|min:3',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'service' => 'required|int',
-            'role' => 'required|int',
-        ]);
+    // Validation des données
+    $validatedData = $request->validate([
+        'name' => 'required|string|min:3',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'service' => 'required|int',
+        'role' => 'required|int',
+        'password' => 'nullable|string|min:8|confirmed', // nouveau champ de validation
+    ]);
 
-        // Mise à jour des informations de l'utilisateur
-        $user->name = $validatedData['name'];
-        $user->email = $validatedData['email'];
-        $user->service_id = $validatedData['service'];
-        $user->role_id = $validatedData['role'];
-        $user->save();
+    // Mise à jour des informations
+    $user->name = $validatedData['name'];
+    $user->email = $validatedData['email'];
+    $user->service_id = $validatedData['service'];
+    $user->role_id = $validatedData['role'];
 
-        return redirect()->route('user')->with('success', 'Utilisateur modifié avec succès.');
+    // Si un nouveau mot de passe est fourni, on le met à jour
+    if (!empty($validatedData['password'])) {
+        $user->password = Hash::make($validatedData['password']);
     }
+
+    $user->save();
+
+    return redirect()->route('user')->with('success', 'Utilisateur modifié avec succès.');
+}
+
 
     public function update_profile(Request $request, $id)
     {
