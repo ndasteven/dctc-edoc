@@ -138,7 +138,7 @@
                     <!-- Renommer -->
                     <button
                         class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled" @click='clickeditfolder' wire:click="getFolderId({{ $this->folderCreateId}})">
+                        wire:loading.attr="disabled" @if ($this->docClickPropriete=='folder') @click='clickeditfolder' wire:click="getFolderId({{ $this->folderCreateId}})" @endif  @if ($this->docClickPropriete=='file') @click='clickeditFile' wire:click="getFileId({{ $this->folderCreateId }})" @endif>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />

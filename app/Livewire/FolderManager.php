@@ -403,7 +403,7 @@ class FolderManager extends Component
             $this->docClickPropriete=$doc;
             $this->infoPropriete=Folder::where('id', $id)->with('user')->first();            
         }if($doc==='file'){
-            $this->idClickPropriete=$id;
+            $this->folderCreateId=$this->idClickPropriete=$id;
             $this->docClickPropriete=$doc;
             $this->infoPropriete=Document::where('id', $id)->with('user')->first();
         } 
@@ -468,7 +468,7 @@ class FolderManager extends Component
     public function render()
     {
         if(isset($this->services)){
-            $folders = Folder::where('service_id', $this->services->id)->withCount('children')->withCount('files')->get();
+            $folders = Folder::where('service_id', $this->services->id)->where('parent_id', NULL)->withCount('children')->withCount('files')->get();
         } else{
             $folders = Folder::where('parent_id', $this->parentId)->withCount('children')->withCount('files')->get(); // ajoute le nombre de documents;
         }
