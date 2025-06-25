@@ -1,27 +1,16 @@
 <div id="permissionModal" wire:ignore.self
     class="fixed hidden inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-center">
-   <div 
-    x-data="{ show: false, message: '' }"
-    x-init="
-        window.addEventListener('permissionSave', (event) => {
-            message = event.detail?.message || 'Permissions enregistrées.';
-            show = true;
-            setTimeout(() => show = false, 3000);
-        });
-    "
-    x-show="show"
-    x-transition
-    class="fixed top-4 right-4 bg-green-600 text-white p-4 rounded shadow-lg flex items-center space-x-2 z-50"
-    style="display: none;"
->
-    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-    </svg>
-    <span x-text="message" class="text-sm font-medium"></span>
-</div>
-
-
-
+    <div x-data="{ show: false }" x-show="show" x-transition x-init="window.addEventListener('permissionSave', () => {
+        show = true;
+        setTimeout(() => show = false, 3000);
+    });"
+        class="fixed top-4 right-4 bg-green-600 text-white p-4 rounded shadow" style="display: none;">
+        <div class="max-w-sm">
+            <div class="p-4 mb-4 text-sm text-white bg-green-500 dark:bg-green-800 dark:text-white" role="alert">
+                <span class="font-medium">Éffectué avec succès! </span> .
+            </div>
+        </div>
+    </div>
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl  max-h-[85vh] overflow-y-auto">
         <!-- Informations sur le dossier -->
         <div class="mb-6">
@@ -114,37 +103,75 @@
                 <tbody id="usersPermissionsList" class="divide-y divide-gray-200 bg-white">
                     @if ($allUsers)
                         @foreach ($allUsers as $user)
+                            <thead>
+                                {{-- <div class="mb-4">
+                                                <label for="user"
+                                                    class="block text-sm font-medium text-gray-700 mb-1">Utilisateur</label>
+                                                <p class="text-sm text-gray-900">{{ old('user', $user->name) }}</p>
+                                                <p class="text-sm text-gray-500">ID : {{ old('user_id', $user->id) }}
+                                                </p>
+
+                                                @error('user')
+                                                    <span class="text-red-600 text-sm mt-1">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
+
+                                                <label for="folder_id"
+                                                    class="block text-sm font-medium text-gray-700 mb-1">ID du
+                                                    Dossier</label>
+                                                <p class="text-sm text-gray-900">
+                                                    {{ $infoPropriete->name ?? ($infoPropriete->nom ?? 'Aucun nom') }}
+                                                </p>
+                                                <p class="text-sm text-gray-500">ID : {{ $infoPropriete->id ?? '' }}
+                                                </p>
+
+                                                @error('folder_id')
+                                                    <span class="text-red-600 text-sm mt-1">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
+                                            </div> --}}
+                            </thead>
                             <tr class="odd:bg-white even:bg-gray-50 border-b border-gray-200">
-                                <td class="px-4 py-2">{{ $user->name }}</td>
+                                <td class="px-4 py-2">{{ $user->name }} </td>
                                 <td class="px-4 py-2 text-right">
-                                    <form method="POST" wire:submit.prevent="savePermission({{ $user->id }})">
+
+
+                                    <form method="POST" wire:submit.prevent='savePermission({{ $user->id }})'>
                                         @csrf
 
+
+                                        <!-- Radio buttons -->
                                         <div class="inline-flex items-center space-x-4 mr-4">
+                                            {{-- utile pour recuperer une valeur dans la vue ex:$user->id pour appliquer sur wire:model --}}
+
                                             <label class="inline-flex items-center">
-                                                <input type="radio" wire:model="permissions.{{ $user->id }}"
-                                                    value="L" class="form-radio h-4 w-4 text-blue-600">
+                                                <input id="inline-radio-{{ $user->id }}" type="radio"
+                                                    wire:model="permission" value="L"
+                                                    class="form-radio h-4 w-4 text-blue-600" checked>
                                                 <span class="ml-2">Lecture</span>
                                             </label>
 
                                             <label class="inline-flex items-center">
-                                                <input type="radio" wire:model="permissions.{{ $user->id }}"
-                                                    value="E" class="form-radio h-4 w-4 text-blue-600">
+                                                <input id="inline-radio-{{ $user->id }}" type="radio"
+                                                    wire:model="permission" value="E"
+                                                    class="form-radio h-4 w-4 text-blue-600">
                                                 <span class="ml-2">Écriture</span>
                                             </label>
-
                                             <label class="inline-flex items-center">
-                                                <input type="radio" wire:model="permissions.{{ $user->id }}"
-                                                    value="LE" class="form-radio h-4 w-4 text-blue-600">
+                                                <input id="inline-radio-{{ $user->id }}" type="radio"
+                                                    wire:model="permission" value="LE"
+                                                    class="form-radio h-4 w-4 text-blue-600">
                                                 <span class="ml-2">Lecture/Écriture</span>
                                             </label>
                                         </div>
 
+                                        <!-- Bouton submit -->
                                         <button type="submit"
                                             class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">
                                             Enregistrer
-                                            <span wire:loading wire:target="savePermission({{ $user->id }})"
-                                                role="status">
+                                            <span wire:loading wire:target="savePermission" role="status">
                                                 <svg aria-hidden="true"
                                                     class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
                                                     viewBox="0 0 100 101" fill="none"
@@ -159,6 +186,7 @@
                                             </span>
                                         </button>
                                     </form>
+
                                 </td>
                             </tr>
                         @endforeach
