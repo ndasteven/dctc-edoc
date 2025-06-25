@@ -2,20 +2,20 @@
     <div class="">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-gray overflow-hidden shadow-xl sm:rounded-lg flex items-center space-x-4 p-4">
-    <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto" >Création nouveau dossier</p>
-        <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc" 
-            class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path fill-rule="evenodd"
-                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
-                    clip-rule="evenodd" />
-            </svg>
-            Nouveau Dossier
-        </button>
-</div>
-            
+                <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto">Création nouveau dossier</p>
+                <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc"
+                    class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Nouveau Dossier
+                </button>
+            </div>
+
             @include('propriete')
             @include('createFolder')
 
@@ -98,6 +98,9 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white relative overflow-auto"
                 style="height: 60vh ">
                 @foreach ($folders as $index => $folder)
+                    @php
+                        $permission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), $folder->id);
+                    @endphp
                     <div wire:key={{ $index }}
                         class="p-2 border-0 rounded iconButton  grid relative click-right w-40 h-32 rounded shadow-md overflow-hidden bg-cover bg-center group hover:scale-105 transition"
                         style="background-image: url({{ asset('img/folder.png') }});"
@@ -129,6 +132,26 @@
                                     </span>
                                 </span> ⋮</button>
                         </div>
+                        <!-- Badge de permission à gauche -->
+                        <div class="flex flex-col space-y-1">
+                            @if ($permission === 'L')
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                                    👁️ Lecture
+                                </span>
+                            @elseif ($permission === 'E')
+                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
+                                    ✏️ Écriture
+                                </span>
+                            @elseif ($permission === 'LE')
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                                    🔓 Lecture + Écriture
+                                </span>
+                            @else
+                                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
+                                    🚫 Aucun
+                                </span>
+                            @endif
+                        </div>
                         <a href="{{ route('folders.show', $folder->id) }}" class="text-blue-600 font-semibold">
                             <!-- Nom du dossier (centré ou en bas) -->
                             <div class="text-gray-600 text-sm font-semibold text-center">
@@ -151,7 +174,8 @@
                         <!-- Dropdown menu -->
                         <div id="dropdownRight-{{ $folder->id }}"
                             class="z-10 absolute hidden bg-blue-600 divide-y divide-gray-100  shadow-sm w-44 dark:bg-gray-700">
-                            <ul class=" text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownRightButton">
+                            <ul class=" text-sm text-gray-700 dark:text-gray-200"
+                                aria-labelledby="dropdownRightButton">
                                 <li style="border-top: solid 1px white">
                                     <small>
                                         <button @if ($folder->verrouille) disabled @endif href="#"
@@ -209,6 +233,7 @@
                 @foreach ($fichiers as $file)
                     @php
                         $type = strtolower($file->type);
+                        $filePermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), null, $file->id);
                     @endphp
 
                     <div class="p-2 border-0 rounded bg-white grid w-40 h-32 overflow-hidden click-droit-file bg-cover bg-center group hover:scale-105 transition"
@@ -216,6 +241,27 @@
                         style="background-image:  url('@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif');">
                         <a href="/pdf/{{ $file->id }}" class="text-blue-600 font-semibold relative"
                             id="lien-file">
+                            <div class="flex justify-between items-start">
+                                <!-- Badge de permission -->
+                                @if ($filePermission === 'L')
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-1 py-0.5 rounded font-medium">
+                                        👁️
+                                    </span>
+                                @elseif ($filePermission === 'E')
+                                    <span
+                                        class="bg-yellow-100 text-yellow-800 text-xs px-1 py-0.5 rounded font-medium">
+                                        ✏️
+                                    </span>
+                                @elseif ($filePermission === 'LE')
+                                    <span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded font-medium">
+                                        🔓
+                                    </span>
+                                @else
+                                    <span class="bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded font-medium">
+                                        🚫
+                                    </span>
+                                @endif
+                            </div>
                             <!-- Bouton menu (en haut à droite) -->
                             <div class="flex justify-end">
                                 @if ($file->verrouille)
@@ -496,7 +542,7 @@
             const lien_id = document.querySelectorAll('#ul')
             lien_id.forEach((el) => {
                 el.addEventListener('click', (
-                e) => { // pour desactiver la redirection vers les affichage du fichier
+                    e) => { // pour desactiver la redirection vers les affichage du fichier
                     e.preventDefault()
                 })
             })
@@ -540,7 +586,8 @@
 
         })
         document.addEventListener('changeUrl', function(
-        event) { //permet d'ecouter evenement changeUrl de son controller et  naviger entre les folder sans rafraichir la page
+            event
+            ) { //permet d'ecouter evenement changeUrl de son controller et  naviger entre les folder sans rafraichir la page
             history.replaceState(null, '', '/folders/' + event.detail[0].detail);
         });
 
@@ -559,6 +606,7 @@
     function clickeditFile() {
         document.getElementById('clickeditFile').click()
     }
+
     function clickedcreatefolder() {
         document.getElementById('createDoc').click()
     }
