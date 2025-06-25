@@ -1,5 +1,5 @@
 <!-- Modal toggle -->
-
+{{-- push de save --}}
 <button data-modal-target="propiete" id="propriete" data-modal-toggle="propiete" type="button"></button>
 <!-- Main modal -->
 <div id="propiete" tabindex="-1" aria-hidden="true"
