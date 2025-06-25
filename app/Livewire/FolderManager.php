@@ -446,24 +446,7 @@ class FolderManager extends Component
         $this->dispatch('resetJS');
         $this->infoPropriete=null;
     }
-    public $allUsers;
-    public $query;
-    public function searchUser(){
-        if(!empty($this->query)){
-            $mots = explode(' ', $this->query);
-            $this->allUsers = collect(user::select('id', 'name')->where(function($query) use ($mots){
-                foreach ($mots as $mot) {
-                    $query->where('name', 'like', '%' . $mot . '%')->orWhere('email', 'like', '%' . $mot . '%');
-                }
-            })
-            ->take(3)
-            ->get());  
-        }else{
-           $this->allUsers=null; 
-        }
-        
-        
-    }
+
     
     public function render()
     {
