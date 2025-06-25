@@ -55,6 +55,106 @@ class UserPermission extends Component
         }
     }
 
+    // public function savePermission($userSelectId)
+    // {
+    //     $this->validate([
+    //         "permissions.$userSelectId" => 'required',
+    //     ]);
+
+    //     $user_select = User::findOrFail($userSelectId);
+    //     $permission = $this->permissions[$userSelectId];
+
+    //     $data = [
+    //         'user' => $user_select->name,
+    //         'user_id' => $user_select->id,
+    //         'permission' => $permission,
+    //     ];
+
+    //     foreach ($this->getAllfoldersAndDocuments($this->entities) as $entity) {
+    //         if ($entity instanceof Folder) {
+    //             $data['folder'] = $entity->name;
+    //             $data['folder_id'] = $entity->id;
+    //             $data['document_id'] = null;
+    //         }
+
+    //         if ($entity instanceof Document) {
+    //             $data['document'] = $entity->nom;
+    //             $data['document_id'] = $entity->id;
+    //             $data['folder_id'] = null;
+    //         }
+
+    //         ModelsUserPermission::updateOrCreate(
+    //             [
+    //                 'user_id' => $user_select->id,
+    //                 'folder_id' => $data['folder_id'],
+    //                 'document_id' => $data['document_id'],
+    //             ],
+    //             $data,
+    //         );
+    //     }
+    //     $total = count($this->getAllfoldersAndDocuments($this->entities));
+
+    //     $this->dispatch(
+    //         'permissionSave',
+    //         detail: [
+    //             'message' => "Permissions enregistrées sur $total élément(s).",
+    //         ],
+    //     );
+
+    //     // $this->dispatch('permissionSave');
+    //     // $this->dispatch('success', message: "Permissions enregistrées sur " . count($this->getAllfoldersAndDocuments($this->entities)) . " élément(s).");
+    // }
+
+    // public function savePermission($userSelectId)
+    // {
+    //     $this->validate([
+    //         "permissions.$userSelectId" => 'required',
+    //     ]);
+
+    //     $user_select = User::findOrFail($userSelectId);
+    //     $permission = $this->permissions[$userSelectId];
+
+    //     $data = [
+    //         'user' => $user_select->name,
+    //         'user_id' => $user_select->id,
+    //         'permission' => $permission,
+    //     ];
+
+    //     $allEntities = $this->getAllfoldersAndDocuments($this->entities);
+
+    //     foreach ($allEntities as $entity) {
+    //         if ($entity instanceof Folder) {
+    //             $data['folder'] = $entity->name;
+    //             $data['folder_id'] = $entity->id;
+    //             $data['document_id'] = null;
+    //         }
+
+    //         if ($entity instanceof Document) {
+    //             $data['document'] = $entity->nom;
+    //             $data['document_id'] = $entity->id;
+    //             $data['folder_id'] = null;
+    //         }
+
+    //         ModelsUserPermission::updateOrCreate(
+    //             [
+    //                 'user_id' => $user_select->id,
+    //                 'folder_id' => $data['folder_id'],
+    //                 'document_id' => $data['document_id'],
+    //             ],
+    //             $data,
+    //         );
+    //     }
+
+    //     $total = count($allEntities);
+
+    //     // Utiliser session flash pour le message
+    //     session()->flash('message', "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.");
+    //     session()->flash('type', 'success');
+
+    //     // OU utiliser dispatch (choisir une des deux méthodes)
+    //     $this->dispatch('show-message', message: "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.", type: 'success');
+    // }
+
     public function savePermission($userSelectId)
     {
         $this->validate([
@@ -70,7 +170,9 @@ class UserPermission extends Component
             'permission' => $permission,
         ];
 
-        foreach ($this->getAllfoldersAndDocuments($this->entities) as $entity) {
+        $allEntities = $this->getAllfoldersAndDocuments($this->entities);
+
+        foreach ($allEntities as $entity) {
             if ($entity instanceof Folder) {
                 $data['folder'] = $entity->name;
                 $data['folder_id'] = $entity->id;
@@ -92,17 +194,11 @@ class UserPermission extends Component
                 $data,
             );
         }
-        $total = count($this->getAllfoldersAndDocuments($this->entities));
 
-        $this->dispatch(
-            'permissionSave',
-            detail: [
-                'message' => "Permissions enregistrées sur $total élément(s).",
-            ],
-        );
+        $total = count($allEntities);
 
-        // $this->dispatch('permissionSave');
-        // $this->dispatch('success', message: "Permissions enregistrées sur " . count($this->getAllfoldersAndDocuments($this->entities)) . " élément(s).");
+        // Utiliser dispatch uniquement
+        $this->dispatch('show-message', message: "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.", type: 'success');
     }
 
     private function getAllfoldersAndDocuments($entitie)
