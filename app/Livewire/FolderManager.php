@@ -469,7 +469,7 @@ class FolderManager extends Component
 
             if ($type === 'folder') {
                 $folder = Folder::find($id);
-                if ($folder) {
+                if ($folder&& !$folder->verrouille) {
                     $this->deleteFolderRecursively($folder);
                     $deletedFolders++;
                 }
@@ -477,7 +477,7 @@ class FolderManager extends Component
 
             if ($type === 'file') {
                 $file = Document::find($id);
-                if ($file) {
+                if ($file && !$file->verrouille) {
                     $this->deleteFileDirect($file);
                     $deletedFiles++;
                 }
