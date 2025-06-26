@@ -90,7 +90,7 @@ class User extends Authenticatable
         return $this->hasMany(folder::class);
     }
 
-    public function permissions(): HasMany
+    public function permissions()
     {
         return $this->hasMany(UserPermission::class);
     }

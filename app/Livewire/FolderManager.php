@@ -404,7 +404,7 @@ class FolderManager extends Component
             $this->docClickPropriete=$doc;
             $this->infoPropriete=Folder::where('id', $id)->with('user')->first();            
         }if($doc==='file'){
-            $this->idClickPropriete=$id;
+            $this->folderCreateId=$this->idClickPropriete=$id;
             $this->docClickPropriete=$doc;
             $this->infoPropriete=Document::where('id', $id)->with('user')->first();
         } 
@@ -447,29 +447,12 @@ class FolderManager extends Component
         $this->dispatch('resetJS');
         $this->infoPropriete=null;
     }
-    public $allUsers;
-    public $query;
-    public function searchUser(){
-        if(!empty($this->query)){
-            $mots = explode(' ', $this->query);
-            $this->allUsers = collect(user::select('id', 'name')->where(function($query) use ($mots){
-                foreach ($mots as $mot) {
-                    $query->where('name', 'like', '%' . $mot . '%')->orWhere('email', 'like', '%' . $mot . '%');
-                }
-            })
-            ->take(3)
-            ->get());  
-        }else{
-           $this->allUsers=null; 
-        }
-        
-        
-    }
+
     
     public function render()
     {
         if(isset($this->services)){
-            $folders = Folder::where('service_id', $this->services->id)->withCount('children')->withCount('files')->get();
+            $folders = Folder::where('service_id', $this->services->id)->where('parent_id', NULL)->withCount('children')->withCount('files')->get();
         } else{
             $folders = Folder::where('parent_id', $this->parentId)->withCount('children')->withCount('files')->get(); // ajoute le nombre de documents;
         }
