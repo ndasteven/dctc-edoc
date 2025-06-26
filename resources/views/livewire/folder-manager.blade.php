@@ -2,20 +2,29 @@
     <div class="">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-gray overflow-hidden shadow-xl sm:rounded-lg flex items-center space-x-4 p-4">
-    <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto" >Création nouveau dossier</p>
-        <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc" 
-            class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path fill-rule="evenodd"
-                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
-                    clip-rule="evenodd" />
-            </svg>
-            Nouveau Dossier
-        </button>
-</div>
-            
+                <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto">Création nouveau dossier</p>
+                <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc"
+                    class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Nouveau Dossier
+                </button>
+            </div>
+
+             <!-- message supprimmer la selection -->
+            @if (session()->has('message'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                    role="alert">
+                    <strong class="font-bold">Succès !</strong>
+                    <span class="block sm:inline">{{ session('message') }}</span>
+                </div>
+            @endif
+
             @include('propriete')
             @include('createFolder')
 
@@ -95,6 +104,25 @@
         @endif
 
         @if (count($folders) > 0 or count($fichiers) > 0)
+            <!-- supprimmer la selection -->
+            <div id="bulk-delete-bar"
+    class="hidden mb-4 p-4 bg-red-100 border border-red-300 rounded-md flex justify-between items-center w-full">
+    
+    <div class="flex gap-2 items-center text-red-700 font-semibold">
+        <span><span id="selected-count">0</span> élément(s) sélectionné(s)</span>
+        <button id="select-all" class="underline text-sm hover:text-red-900">Tout sélectionner</button>
+        <button id="deselect-all" class="underline text-sm hover:text-red-900">Tout désélectionner</button>
+    </div>
+
+    <button id="delete-selected" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+        Supprimer la sélection
+    </button>
+</div>
+
+
+           
+
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white relative overflow-auto"
                 style="height: 60vh ">
                 @foreach ($folders as $index => $folder)
@@ -102,6 +130,10 @@
                         class="p-2 border-0 rounded iconButton  grid relative click-right w-40 h-32 rounded shadow-md overflow-hidden bg-cover bg-center group hover:scale-105 transition"
                         style="background-image: url({{ asset('img/folder.png') }});"
                         data-dropdown-id="dropdownRight-{{ $folder->id }}" data-dropdown-placement="right">
+                        <!-- selection folder -->
+                        <input type="checkbox" class="absolute top-1 left-1 hidden checkbox-item"
+                            value="{{ $folder->id }}" data-type="folder">
+
                         <!-- Bouton menu (en haut à droite) -->
                         <div class="flex justify-end">
                             @if ($folder->verrouille)
@@ -151,7 +183,8 @@
                         <!-- Dropdown menu -->
                         <div id="dropdownRight-{{ $folder->id }}"
                             class="z-10 absolute hidden bg-blue-600 divide-y divide-gray-100  shadow-sm w-44 dark:bg-gray-700">
-                            <ul class=" text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownRightButton">
+                            <ul class=" text-sm text-gray-700 dark:text-gray-200"
+                                aria-labelledby="dropdownRightButton">
                                 <li style="border-top: solid 1px white">
                                     <small>
                                         <button @if ($folder->verrouille) disabled @endif href="#"
@@ -214,6 +247,12 @@
                     <div class="p-2 border-0 rounded bg-white grid w-40 h-32 overflow-hidden click-droit-file bg-cover bg-center group hover:scale-105 transition"
                         data-dropdown-id="dropdownRight-{{ $file->id }}"
                         style="background-image:  url('@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif');">
+
+                        <input type="checkbox" class="checkbox-item hidden" value="{{ $file->id }}"
+                            data-type="file">
+
+
+
                         <a href="/pdf/{{ $file->id }}" class="text-blue-600 font-semibold relative"
                             id="lien-file">
                             <!-- Bouton menu (en haut à droite) -->
@@ -496,7 +535,7 @@
             const lien_id = document.querySelectorAll('#ul')
             lien_id.forEach((el) => {
                 el.addEventListener('click', (
-                e) => { // pour desactiver la redirection vers les affichage du fichier
+                    e) => { // pour desactiver la redirection vers les affichage du fichier
                     e.preventDefault()
                 })
             })
@@ -536,11 +575,13 @@
         document.addEventListener('resetJS', function(e) {
             setTimeout(() => {
                 clickdroit()
+                selectionmultiple()
             }, 500);
 
         })
         document.addEventListener('changeUrl', function(
-        event) { //permet d'ecouter evenement changeUrl de son controller et  naviger entre les folder sans rafraichir la page
+            event
+            ) { //permet d'ecouter evenement changeUrl de son controller et  naviger entre les folder sans rafraichir la page
             history.replaceState(null, '', '/folders/' + event.detail[0].detail);
         });
 
@@ -548,22 +589,101 @@
     })
 </script>
 <script>
-    function clickModal() {
-        document.getElementById('openModalDoc').click()
-    }
+    document.addEventListener('DOMContentLoaded', () => {
 
-    function clickeditfolder() {
-        document.getElementById('clickeditFolder').click()
-    }
+        function updateDeleteBar() {
+            const checkboxes = document.querySelectorAll('.checkbox-item');
+            const checked = Array.from(checkboxes).filter(cb => cb.checked);
+            const count = checked.length;
 
-    function clickeditFile() {
-        document.getElementById('clickeditFile').click()
-    }
-    function clickedcreatefolder() {
-        document.getElementById('createDoc').click()
-    }
+            const bar = document.getElementById('bulk-delete-bar');
+            const countSpan = document.getElementById('selected-count');
 
-    function clickModalPropriete() {
-        document.getElementById('propriete').click()
-    }
+            if (count > 0) {
+                bar.classList.remove('hidden');
+            } else {
+                bar.classList.add('hidden');
+            }
+
+            if (countSpan) countSpan.textContent = count;
+        }
+
+        function initLongPressSelection() {
+            document.querySelectorAll('.click-right, .click-droit-file').forEach((el) => {
+                let timer = null;
+
+                el.addEventListener('mousedown', () => {
+                    timer = setTimeout(() => {
+                        document.querySelectorAll('.checkbox-item').forEach(cb => {
+                            cb.classList.remove('hidden');
+                        });
+
+                        const checkbox = el.querySelector('.checkbox-item');
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+
+                        updateDeleteBar();
+                    }, 1500);
+                });
+
+                el.addEventListener('mouseup', () => clearTimeout(timer));
+                el.addEventListener('mouseleave', () => clearTimeout(timer));
+            });
+        }
+
+        function initDeleteButton() {
+            const deleteButton = document.getElementById('delete-selected');
+            if (!deleteButton) return;
+
+            deleteButton.addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.checkbox-item:checked');
+                const selectedItems = Array.from(checkboxes).map(cb => ({
+                    id: cb.value,
+                    type: cb.dataset.type
+                }));
+
+                if (selectedItems.length > 0 && confirm("Confirmer la suppression ?")) {
+                    Livewire.dispatch('deleteSelectedItems', { items: selectedItems });
+                }
+            });
+        }
+
+        function initSelectButtons() {
+            const selectAllBtn = document.getElementById('select-all');
+            const deselectAllBtn = document.getElementById('deselect-all');
+
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.checkbox-item').forEach(cb => {
+                        cb.classList.remove('hidden');
+                        cb.checked = true;
+                    });
+                    updateDeleteBar();
+                });
+            }
+
+            if (deselectAllBtn) {
+                deselectAllBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.checkbox-item').forEach(cb => {
+                        cb.checked = false;
+                    });
+                    updateDeleteBar();
+                });
+            }
+        }
+
+        // Initialisation
+        initLongPressSelection();
+        initDeleteButton();
+        initSelectButtons();
+
+        document.querySelectorAll('.checkbox-item').forEach(cb => {
+            cb.addEventListener('change', updateDeleteBar);
+        });
+    });
 </script>
+
+
+@livewireScripts
+<script defer src="{{ asset('vendor/livewire/livewire.js') }}"></script>

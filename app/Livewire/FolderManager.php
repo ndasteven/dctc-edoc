@@ -16,7 +16,8 @@ use Livewire\Attributes\Url;
 
 class FolderManager extends Component
 {
-    
+    protected $listeners = ['deleteSelectedItems'];
+
     use WithFileUploads;
     public $currentFolder = [];
     public $folderName = '';
@@ -483,4 +484,86 @@ class FolderManager extends Component
         
         return view('livewire.folder-manager', compact('folders', 'fichiers','SessionServiceinfo','infoProprietes'));
     }
+
+
+
+public function deleteSelectedItems(array $items)
+{
+    \Log::info("deleteSelectedItems appelé", compact('items'));
+
+    $deletedFolders = 0;
+    $deletedFiles = 0;
+
+    foreach ($items as $item) {
+        if (!isset($item['id'], $item['type'])) continue;
+
+        $id = intval($item['id']);
+        $type = $item['type'];
+
+        if ($type === 'folder') {
+            $folder = Folder::find($id);
+            if ($folder) {
+                $this->deleteFolderRecursively($folder);
+                $deletedFolders++;
+            }
+        }
+
+        if ($type === 'file') {
+            $file = Document::find($id);
+            if ($file) {
+                $this->deleteFileDirect($file);
+                $deletedFiles++;
+            }
+        }
+    }
+
+    session()->flash('message', "$deletedFolders dossier(s) et $deletedFiles fichier(s) supprimé(s).");
+    $this->dispatch('foldersUpdated');
+    $this->dispatch('filesUpdated');
+    $this->dispatch('resetJS');
+}
+
+
+protected function deleteFolderRecursively(folder $folder)
+{
+    // Supprimer tous les fichiers dans le dossier
+    foreach ($folder->files as $file) {
+        $this->deleteFileDirect($file);
+    }
+
+    // Supprimer récursivement les sous-dossiers
+    foreach ($folder->children as $childFolder) {
+        $this->deleteFolderRecursively($childFolder);
+    }
+
+    // Supprimer le dossier lui-même
+    $folder->delete();
+}
+
+
+
+protected function deleteFileDirect(Document $file)
+{
+    $path = public_path($file->filename);
+
+    // Supprimer physiquement le fichier s’il existe
+    if ($file->filename && file_exists($path)) {
+        @unlink($path);
+    }
+
+    // Supprimer le fichier en base de données
+    $file->delete();
+
+    // Journaliser l’action
+    ActivityLog::create([
+        'action' => '❌ Fichier supprimé',
+        'description' => $file->nom,
+        'icon' => '✔',
+        'user_id' => Auth::id(),
+        'confidentiel' => false,
+    ]);
+}
+
+
+
 }
