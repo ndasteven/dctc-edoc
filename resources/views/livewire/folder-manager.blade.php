@@ -137,8 +137,12 @@
                         style="background-image: url({{ asset('img/folder.png') }});"
                         data-dropdown-id="dropdownRight-{{ $folder->id }}" data-dropdown-placement="right">
                         <!-- selection folder -->
-                        <input type="checkbox" class="absolute top-1 left-1 hidden checkbox-item"
-                            value="{{ $folder->id }}" data-type="folder">
+                        @if (!$folder->verrouille)
+                            <input type="checkbox" class="checkbox-item hidden" value="{{ $folder->id }}"
+                                data-type="folder">
+                        @endif
+
+
                         <!-- Bouton menu (en haut à droite) -->
                         <div class="flex justify-end">
                             @if ($folder->verrouille)
@@ -274,8 +278,12 @@
                         data-dropdown-id="dropdownRight-{{ $file->id }}"
                         style="background-image:  url('@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif');">
                         <!-- selection file -->
-                        <input type="checkbox" class="checkbox-item hidden" value="{{ $file->id }}"
-                            data-type="file">
+                        @if (!$file->verrouille)
+                            <input type="checkbox" class="checkbox-item hidden" value="{{ $file->id }}"
+                                data-type="file">
+                        @endif
+
+
                         <a href="/pdf/{{ $file->id }}" class="text-blue-600 font-semibold relative"
                             id="lien-file">
                             <div class="flex justify-between items-start">
@@ -664,7 +672,7 @@
                             });
 
                             const checkbox = el.querySelector('.checkbox-item');
-                            if (checkbox) {
+                            if (checkbox && !checkbox.disabled) {
                                 checkbox.checked = true;
                             }
 
@@ -688,22 +696,21 @@
                         type: cb.dataset.type
                     }));
 
-                    if (selectedItems.length > 0 ) {
-                        
+                    if (selectedItems.length > 0) {
                         Swal.fire({
-                        title: 'Confirmer la suppression',
-                        text: "Tous sera supprimé définitivement.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Oui, supprimer',
-                        cancelButtonText: 'Annuler'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                           Livewire.dispatch('deleteSelectedItems', {
-                            items: selectedItems
+                            title: 'Confirmer la suppression',
+                            text: "Tous les éléments sélectionnés seront supprimés définitivement.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Oui, supprimer',
+                            cancelButtonText: 'Annuler'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Livewire.dispatch('deleteSelectedItems', {
+                                    items: selectedItems
+                                });
+                            }
                         });
-                        }
-                    });
                     }
                 });
             }
@@ -715,8 +722,10 @@
                 if (selectAllBtn) {
                     selectAllBtn.addEventListener('click', () => {
                         document.querySelectorAll('.checkbox-item').forEach(cb => {
-                            cb.classList.remove('hidden');
-                            cb.checked = true;
+                            if (!cb.disabled) {
+                                cb.classList.remove('hidden');
+                                cb.checked = true;
+                            }
                         });
                         updateDeleteBar();
                     });
@@ -725,7 +734,9 @@
                 if (deselectAllBtn) {
                     deselectAllBtn.addEventListener('click', () => {
                         document.querySelectorAll('.checkbox-item').forEach(cb => {
-                            cb.checked = false;
+                            if (!cb.disabled) {
+                                cb.checked = false;
+                            }
                         });
                         updateDeleteBar();
                     });
@@ -742,13 +753,17 @@
             });
         });
     }
-    supressionMultiple()
-    document.addEventListener('resetJS', function(e) {
+
+    supressionMultiple();
+
+    // Réinitialisation après re-render Livewire
+    document.addEventListener('resetJS', function() {
         setTimeout(() => {
-            supressionMultiple()
+            supressionMultiple();
         }, 500);
-    })
+    });
 </script>
+
 
 <script>
     function clickModal() {
