@@ -56,51 +56,99 @@ class UserPermission extends Component
     }
 
 
+    // public function savePermission($userSelectId)
+    // {
+    //     $this->validate([
+    //         "permissions.$userSelectId" => 'required',
+    //     ]);
+
+    //     $user_select = User::findOrFail($userSelectId);
+    //     $permission = $this->permissions[$userSelectId];
+
+    //     $data = [
+    //         'user' => $user_select->name,
+    //         'user_id' => $user_select->id,
+    //         'permission' => $permission,
+    //     ];
+
+    //     $allEntities = $this->getAllfoldersAndDocuments($this->entities);
+
+    //     foreach ($allEntities as $entity) {
+    //         if ($entity instanceof Folder) {
+    //             $data['folder'] = $entity->name;
+    //             $data['folder_id'] = $entity->id;
+    //             $data['document_id'] = null;
+    //         }
+
+    //         if ($entity instanceof Document) {
+    //             $data['document'] = $entity->nom;
+    //             $data['document_id'] = $entity->id;
+    //             $data['folder_id'] = null;
+    //         }
+
+    //         ModelsUserPermission::updateOrCreate(
+    //             [
+    //                 'user_id' => $user_select->id,
+    //                 'folder_id' => $data['folder_id'],
+    //                 'document_id' => $data['document_id'],
+    //             ],
+    //             $data,
+    //         );
+    //     }
+
+    //     $total = count($allEntities);
+
+    //     // Utiliser dispatch uniquement
+    //     $this->dispatch('show-message', message: "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.", type: 'success');
+    // }
+
     public function savePermission($userSelectId)
-    {
-        $this->validate([
-            "permissions.$userSelectId" => 'required',
-        ]);
+{
+    $this->validate([
+        "permissions.$userSelectId" => 'required',
+    ]);
 
-        $user_select = User::findOrFail($userSelectId);
-        $permission = $this->permissions[$userSelectId];
+    $user_select = User::findOrFail($userSelectId);
+    $permission = $this->permissions[$userSelectId];
 
+    $allEntities = $this->getAllfoldersAndDocuments($this->entities);
+
+    foreach ($allEntities as $entity) {
         $data = [
             'user' => $user_select->name,
             'user_id' => $user_select->id,
             'permission' => $permission,
         ];
 
-        $allEntities = $this->getAllfoldersAndDocuments($this->entities);
+        // Initialiser les champs à null
+        $data['folder_id'] = null;
+        $data['document_id'] = null;
+        $data['folder'] = null;
+        $data['document'] = null;
 
-        foreach ($allEntities as $entity) {
-            if ($entity instanceof Folder) {
-                $data['folder'] = $entity->name;
-                $data['folder_id'] = $entity->id;
-                $data['document_id'] = null;
-            }
+        // Conditions pour updateOrCreate
+        $conditions = ['user_id' => $user_select->id];
 
-            if ($entity instanceof Document) {
-                $data['document'] = $entity->nom;
-                $data['document_id'] = $entity->id;
-                $data['folder_id'] = null;
-            }
-
-            ModelsUserPermission::updateOrCreate(
-                [
-                    'user_id' => $user_select->id,
-                    'folder_id' => $data['folder_id'],
-                    'document_id' => $data['document_id'],
-                ],
-                $data,
-            );
+        if ($entity instanceof Folder) {
+            $data['folder'] = $entity->name;
+            $data['folder_id'] = $entity->id;
+            $conditions['folder_id'] = $entity->id;
+            $conditions['document_id'] = null;
+        } elseif ($entity instanceof Document) {
+            $data['document'] = $entity->nom;
+            $data['document_id'] = $entity->id;
+            $conditions['document_id'] = $entity->id;
+            $conditions['folder_id'] = null;
         }
 
-        $total = count($allEntities);
-
-        // Utiliser dispatch uniquement
-        $this->dispatch('show-message', message: "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.", type: 'success');
+        // Créer ou mettre à jour la permission
+        ModelsUserPermission::updateOrCreate($conditions, $data);
     }
+
+    $total = count($allEntities);
+
+    $this->dispatch('show-message', message: "Permissions enregistrées avec succès sur $total élément(s) pour {$user_select->name}.", type: 'success');
+}
 
     private function getAllfoldersAndDocuments($entitie)
     {
