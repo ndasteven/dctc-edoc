@@ -33,6 +33,8 @@ class FolderManager extends Component
     public $users_confidence = [];
     public $folderId;
     public $folderCreateId;
+    protected $listeners = ['deleteSelectedItems'];
+
     public function removeFile($index)
     {
         if (isset($this->files[$index])) {
@@ -46,7 +48,7 @@ class FolderManager extends Component
     {
         $this->files = [];
         $this->compteFileSelected = 0;
-        $this->mot_cle = '';
+        $this->mot_cle = "";
         $this->dispatch('files-cleared-all');
     }
     public function infoIdFocus()
@@ -105,9 +107,13 @@ class FolderManager extends Component
 
     public function createFolder()
     {
+
         $this->validate(['folderName' => 'required']);
         // Vérifie si un dossier identique existe déjà
-        $exists = Folder::where('name', $this->folderName)->where('parent_id', $this->folderCreateId)->where('service_id', $this->services?->id)->exists();
+        $exists = Folder::where('name', $this->folderName)
+            ->where('parent_id', $this->folderCreateId)
+            ->where('service_id', $this->services?->id)
+            ->exists();
 
         if ($exists) {
             $this->dispatch('folderCreerexist');
@@ -142,7 +148,7 @@ class FolderManager extends Component
     public $fileName;
     public $clickfileId;
 
-    public function getFileId($id)
+    public function  getFileId($id)
     {
         $this->clickfileId = $id;
         $file = Document::find($id);
@@ -154,7 +160,9 @@ class FolderManager extends Component
     {
         $this->validate(['fileName' => 'required|min:1']);
         // Vérifie si un dossier identique existe déjà
-        $exists = Document::where('nom', $this->fileName)->where('folder_id', $this->parentId)->exists();
+        $exists = Document::where('nom', $this->fileName)
+            ->where('folder_id', $this->parentId)
+            ->exists();
         if ($exists) {
             $this->dispatch('fileexist');
         } else {
@@ -178,7 +186,10 @@ class FolderManager extends Component
     {
         $this->validate(['folderName' => 'required']);
         // Vérifie si un dossier identique existe déjà
-        $exists = Folder::where('name', $this->folderName)->where('parent_id', $this->folderCreateId)->where('service_id', $this->services?->id)->exists();
+        $exists = Folder::where('name', $this->folderName)
+            ->where('parent_id', $this->folderCreateId)
+            ->where('service_id', $this->services?->id)
+            ->exists();
         if ($exists) {
             $this->dispatch('folderCreerexist');
         } else {
@@ -210,17 +221,15 @@ class FolderManager extends Component
     }
     public function deverrouOrVerrou($infoverrou)
     {
-        if (isset($infoverrou['folder_id'])) {
-            //on verrifie si c'est un objet d'un  Document ou dossier
-            //fichier
+        if (isset($infoverrou['folder_id'])) { //on verrifie si c'est un objet d'un  Document ou dossier
+            //fichier 
             $verrou = Document::where('id', $infoverrou['id'])->first();
 
-            if ($verrou['verrouille']) {
-                // si le code verrouillage existe on enleve
+            if ($verrou['verrouille']) { // si le code verrouillage existe on enleve
                 if (Hash::check($this->code_verrouille, $verrou->code_verrou)) {
                     $verrou->update([
                         'verrouille' => false,
-                        'code_verrou' => '',
+                        'code_verrou' => ''
                     ]);
                     $this->getIds($verrou->id, 'file');
                     // Journalisation pour dévérouillage
@@ -237,8 +246,7 @@ class FolderManager extends Component
                     $this->dispatch('errorVerrou');
                     $this->code_verrouille = '';
                 }
-            } else {
-                //sinon on ajoute
+            } else { //sinon on ajoute
                 $verrou->update([
                     'verrouille' => true,
                     'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
@@ -259,12 +267,11 @@ class FolderManager extends Component
             // dossier A travailler ici pour verrouillage et deverrouillage
 
             $verrou = Folder::where('id', $infoverrou['id'])->first();
-            if ($verrou['verrouille']) {
-                // si le code verrouillage existe on enleve
+            if ($verrou['verrouille']) { // si le code verrouillage existe on enleve
                 if (Hash::check($this->code_verrouille, $verrou->code_verrou)) {
                     $verrou->update([
                         'verrouille' => false,
-                        'code_verrou' => '',
+                        'code_verrou' => ''
                     ]);
                     $this->getIds($verrou->id, 'folder');
                     // Journalisation pour dévérouillage
@@ -281,8 +288,7 @@ class FolderManager extends Component
                     $this->dispatch('errorVerrou');
                     $this->code_verrouille = '';
                 }
-            } else {
-                //sinon on ajoute
+            } else { //sinon on ajoute
                 $verrou->update([
                     'verrouille' => true,
                     'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
@@ -307,7 +313,7 @@ class FolderManager extends Component
             'files.*' => 'required|file|mimes:txt,pdf,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpeg|max:1000200',
         ]);
         if ($this->lock) {
-            $this->validate(['code_verrouille' => 'required|min:4']);
+            $this->validate(["code_verrouille" => "required|min:4"]);
         }
         foreach ($this->files as $file) {
             // Gestion du nom de fichier
@@ -324,11 +330,11 @@ class FolderManager extends Component
                 'type' => $file->getClientOriginalExtension(),
                 'taille' => round($file->getSize() / 1024),
                 'content' => '', // Contenu vide initialement
-                'user_id' => Auth::id(),
+                "user_id" => Auth::id(),
                 'verrouille' => $this->lock,
                 'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
                 'folder_id' => $this->folderCreateId,
-                'confidentiel' => $this->confidence,
+                "confidentiel" => $this->confidence,
             ]);
 
             // Attachement des relations
@@ -358,9 +364,9 @@ class FolderManager extends Component
 
         $this->files = [];
         $this->compteFileSelected = 0;
-        $this->mot_cle = '';
+        $this->mot_cle = "";
         $this->lock = false;
-        $this->code_verrouille = '';
+        $this->code_verrouille = "";
 
         $this->dispatch('resetJS');
     }
@@ -446,20 +452,109 @@ class FolderManager extends Component
         $this->dispatch('resetJS');
         $this->infoPropriete = null;
     }
+    // les fonction de suppression Multiple de folders ou et files
+
+    public function deleteSelectedItems(array $items)
+    {
+        \Log::info("deleteSelectedItems appelé", compact('items'));
+
+        $deletedFolders = 0;
+        $deletedFiles = 0;
+
+        foreach ($items as $item) {
+            if (!isset($item['id'], $item['type'])) continue;
+
+            $id = intval($item['id']);
+            $type = $item['type'];
+
+            if ($type === 'folder') {
+                $folder = Folder::find($id);
+                if ($folder) {
+                    $this->deleteFolderRecursively($folder);
+                    $deletedFolders++;
+                }
+            }
+
+            if ($type === 'file') {
+                $file = Document::find($id);
+                if ($file) {
+                    $this->deleteFileDirect($file);
+                    $deletedFiles++;
+                }
+            }
+        }
+
+        session()->flash('message', "$deletedFolders dossier(s) et $deletedFiles fichier(s) supprimé(s).");
+        $this->dispatch('foldersUpdated');
+        $this->dispatch('filesUpdated');
+        $this->dispatch('resetJS');
+    }
+
+
+    protected function deleteFolderRecursively(folder $folder)
+    {
+        // Supprimer tous les fichiers dans le dossier
+        foreach ($folder->files as $file) {
+            $this->deleteFileDirect($file);
+        }
+
+        // Supprimer récursivement les sous-dossiers
+        foreach ($folder->children as $childFolder) {
+            $this->deleteFolderRecursively($childFolder);
+        }
+
+        // Supprimer le dossier lui-même
+        $folder->delete();
+        // Journaliser l’action
+        ActivityLog::create([
+            'action' => '❌ Fichier supprimé',
+            'description' => $folder->name,
+            'icon' => '✔',
+            'user_id' => Auth::id(),
+            'confidentiel' => false,
+        ]);
+    }
+
+
+
+    protected function deleteFileDirect(Document $file)
+    {
+        $path = public_path($file->filename);
+
+        // Supprimer physiquement le fichier s’il existe
+        if ($file->filename && file_exists($path)) {
+            @unlink($path);
+        }
+
+        // Supprimer le fichier en base de données
+        $file->delete();
+
+        // Journaliser l’action
+        ActivityLog::create([
+            'action' => '❌ Fichier supprimé',
+            'description' => $file->nom,
+            'icon' => '✔',
+            'user_id' => Auth::id(),
+            'confidentiel' => false,
+        ]);
+    }
+    //fin les fonction de suppression Multiple de folders ou et files
 
     public function render()
     {
         if (isset($this->services)) {
-            $folders = Folder::where('service_id', $this->services->id)->where('parent_id', null)->withCount('children')->withCount('files')->get();
+            $folders = Folder::where('service_id', $this->services->id)->where('parent_id', NULL)->withCount('children')->withCount('files')->get();
         } else {
             $folders = Folder::where('parent_id', $this->parentId)->withCount('children')->withCount('files')->get(); // ajoute le nombre de documents;
         }
         if (isset($this->SessionService)) {
             $SessionServiceinfo = Service::find($this->SessionService);
         } else {
-            $SessionServiceinfo = '';
+            $SessionServiceinfo = "";
         }
-        $infoProprietes = $fichiers = Document::where('folder_id', $this->parentId)->get();
+        $infoProprietes =
+
+            $fichiers = Document::where('folder_id', $this->parentId)->get();
 
         return view('livewire.folder-manager', compact('folders', 'fichiers', 'SessionServiceinfo', 'infoProprietes'));
     }
