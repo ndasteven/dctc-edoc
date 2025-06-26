@@ -301,74 +301,75 @@ class FolderManager extends Component
             }
         }
     }
-    public function save()
-    {
-        $this->validate([
-            'files.*' => 'required|file|mimes:txt,pdf,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpeg|max:1000200',
-        ]);
-        if ($this->lock) {
-            $this->validate(['code_verrouille' => 'required|min:4']);
-        }
-        foreach ($this->files as $file) {
-            // Gestion du nom de fichier
-            $originalName = pathinfo($file->getClientOriginalName())['filename'];
-            $newName = $this->generateUniqueFilename($originalName);
 
-            $nomFichier = pathinfo($newName)['filename']; // le nom du fichier sans l'extension
-            // Stockage du fichier
-            $path = $file->store('archives', 'public');
-            // Création du document
-            $document = Document::create([
-                'nom' => $nomFichier,
-                'filename' => $path,
-                'type' => $file->getClientOriginalExtension(),
-                'taille' => round($file->getSize() / 1024),
-                'content' => '', // Contenu vide initialement
-                'user_id' => Auth::id(),
-                'verrouille' => $this->lock,
-                'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
-                'folder_id' => $this->folderCreateId,
-                'confidentiel' => $this->confidence,
-            ]);
+    // V1 stable
+    // public function save()
+    // {
+    //     $this->validate([
+    //         'files.*' => 'required|file|mimes:txt,pdf,doc,docx,xls,xlsx,csv,ppt,pptx,png,jpeg|max:1000200',
+    //     ]);
+    //     if($this->lock){
+    //         $this->validate(["code_verrouille"=>"required|min:4"]);
+    //     }
+    //     foreach ($this->files as $file) {
+    //     // Gestion du nom de fichier
+    //     $originalName = pathinfo($file->getClientOriginalName())['filename'];
+    //     $newName = $this->generateUniqueFilename($originalName);
 
-            // Attachement des relations
-            $document->services()->attach($this->SessionService); //le document charger est lier au service
+    //     $nomFichier=pathinfo($newName)['filename'];// le nom du fichier sans l'extension
+    //     // Stockage du fichier
+    //     $path = $file->store('archives', 'public');
+    //     // Création du document
+    //     $document = Document::create([
+    //         'nom' => $nomFichier,
+    //         'filename' => $path,
+    //         'type' => $file->getClientOriginalExtension(),
+    //         'taille' => round($file->getSize() / 1024),
+    //         'content' => '', // Contenu vide initialement
+    //         "user_id" => Auth::id(),
+    //         'verrouille' => $this->lock   ,
+    //         'code_verrou' => Hash::make($this->code_verrouille), // 🔐 Code à 4 chiffres
+    //         'folder_id' => $this->folderCreateId,
+    //         "confidentiel" => $this->confidence,
+    //     ]);
 
-            if ($this->confidence) {
-                $this->handleConfidentiality($document);
-            }
-            $fullPath = storage_path('app/public/' . $path);
-            //$output = shell_exec("pdftotext -f 1 -l 5 $fullPath - 2>&1");
-            //dd($output);
-            // Dispatch du job
-            traitementQueueUploadFile::dispatch($document, $this->mot_cle ?? '', $this->confidence); // Garantit une string vide si null
+    //     // Attachement des relations
+    //     $document->services()->attach($this->SessionService);//le document charger est lier au service
 
-            // Journalisation
-            ActivityLog::create([
-                'action' => ' Début du traitement du document',
-                'description' => $document->nom,
-                'icon' => '...',
-                'user_id' => Auth::id(),
-                'confidentiel' => $this->confidence,
-            ]);
-        }
-        if (count($this->files) > 0) {
-            $this->dispatch('file_create');
-        }
+    //     if ($this->confidence) {
+    //         $this->handleConfidentiality($document);
+    //     }
+    //     $fullPath = storage_path('app/public/' . $path);
+    //     //$output = shell_exec("pdftotext -f 1 -l 5 $fullPath - 2>&1");
+    //     //dd($output);
+    //     // Dispatch du job
+    //     traitementQueueUploadFile::dispatch($document, $this->mot_cle ?? '', $this->confidence);// Garantit une string vide si null
 
-        $this->files = [];
-        $this->compteFileSelected = 0;
-        $this->mot_cle = '';
-        $this->lock = false;
-        $this->code_verrouille = '';
+    //     // Journalisation
+    //     ActivityLog::create([
+    //         'action' => ' Début du traitement du document',
+    //         'description' => $document->nom,
+    //         'icon' => '...',
+    //         'user_id' => Auth::id(),
+    //         'confidentiel' => $this->confidence,
+    //     ]);
+    //     }
+    //     if(count($this->files)>0){
+    //      $this->dispatch('file_create');
+    //     }
 
-        $this->dispatch('resetJS');
-    }
-    //================================================================================
+    //     $this->files =[];
+    //     $this->compteFileSelected=0;
+    //     $this->mot_cle="";
+    //     $this->lock=false;
+    //     $this->code_verrouille="";
 
-    
-    
-    //================================================================================
+    //     $this->dispatch('resetJS');
+
+    // }
+
+    // V2 test
+
     private function generateUniqueFilename(string $originalName): string
     {
         $counter = 1;

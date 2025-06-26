@@ -1,6 +1,5 @@
 <?php
 
-
 // namespace App\Models;
 
 // use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,10 +14,14 @@
 //         'user_id',      // clé étrangère vers users
 //         'folder',       // nom lisible du dossier
 //         'folder_id',    // clé étrangère vers folders
+//         'document',     // nom lisible du document
+//         'document_id',  // clé étrangère vers documents
 //         'permission',   // L, E ou LE
 //     ];
-//      protected $casts = [
+
+//     protected $casts = [
 //         'folder_id' => 'integer',
+//         'document_id' => 'integer',
 //     ];
 
 //     /**
@@ -37,17 +40,14 @@
 //         return $this->belongsTo(Folder::class);
 //     }
 
-//         public function document()
+//     /**
+//      * Relation avec le modèle Document
+//      */
+//     public function document()
 //     {
-//         return $this->belongsTo(Folder::class);
+//         return $this->belongsTo(Document::class);
 //     }
 // }
-
-
-
-
-// v2
-
 
 
 namespace App\Models;
