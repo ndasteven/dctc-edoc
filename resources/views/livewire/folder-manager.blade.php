@@ -685,5 +685,4 @@
 </script>
 
 
-@livewireScripts
-<script defer src="{{ asset('vendor/livewire/livewire.js') }}"></script>
+
