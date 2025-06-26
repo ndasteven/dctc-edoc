@@ -138,11 +138,9 @@
                         data-dropdown-id="dropdownRight-{{ $folder->id }}" data-dropdown-placement="right">
                         <!-- selection folder -->
                         @if (!$folder->verrouille)
-    <input type="checkbox"
-           class="checkbox-item hidden"
-           value="{{ $folder->id }}"
-           data-type="folder">
-@endif
+                            <input type="checkbox" class="checkbox-item hidden" value="{{ $folder->id }}"
+                                data-type="folder">
+                        @endif
 
 
                         <!-- Bouton menu (en haut à droite) -->
@@ -281,11 +279,9 @@
                         style="background-image:  url('@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif');">
                         <!-- selection file -->
                         @if (!$file->verrouille)
-    <input type="checkbox"
-           class="checkbox-item hidden"
-           value="{{ $file->id }}"
-           data-type="file">
-@endif
+                            <input type="checkbox" class="checkbox-item hidden" value="{{ $file->id }}"
+                                data-type="file">
+                        @endif
 
 
                         <a href="/pdf/{{ $file->id }}" class="text-blue-600 font-semibold relative"
@@ -761,7 +757,7 @@
     supressionMultiple();
 
     // Réinitialisation après re-render Livewire
-    document.addEventListener('resetJS', function () {
+    document.addEventListener('resetJS', function() {
         setTimeout(() => {
             supressionMultiple();
         }, 500);
