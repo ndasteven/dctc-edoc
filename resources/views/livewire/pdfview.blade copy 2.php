@@ -561,7 +561,7 @@
             initializeProtections();
         }
 
-        alert('🔒 Mode lecture seule activé - Protections appliquées');
+        console.log('🔒 Mode lecture seule activé - Protections appliquées');
     })();
 </script>
 </div>
