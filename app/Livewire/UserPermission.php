@@ -36,6 +36,29 @@ class UserPermission extends Component
     //     }
     // }
 
+    public function mount($infoPropriete)
+{
+    $this->entities = $infoPropriete;
+    $this->infoPropriete = $infoPropriete;
+
+    foreach (User::select('id')->get() as $user) {
+        $query = ModelsUserPermission::where('user_id', $user->id);
+
+        if ($this->infoPropriete instanceof Folder) {
+            $query->where('folder_id', $this->infoPropriete->id);
+        } elseif ($this->infoPropriete instanceof Document) {
+            $query->where('document_id', $this->infoPropriete->id);
+        }
+
+        $perm = $query->first();
+
+        if ($perm) {
+            $this->permissions[$user->id] = $perm->permission;
+        }
+    }
+}
+
+
     public function searchUser()
     {
         if (!empty($this->query)) {

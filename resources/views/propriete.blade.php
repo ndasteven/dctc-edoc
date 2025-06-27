@@ -86,16 +86,6 @@
                 <!-- Partie droite (Actions) -->
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 col-span-2">
                     @if ($docClickPropriete == 'folder')
-                        {{-- <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Créer Dossier</span>
-                        </button> --}}
-                        <!-- Créer Dossier -->
                         <button data-modal-target="crud-modal" @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif data-modal-toggle="crud-modal"  @click="clickedcreatefolder"
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled" >
@@ -105,16 +95,6 @@
                             </svg>
                             <span>Créer Dossier</span>
                         </button>
-
-                        {{-- <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4m4-4h12v12H8z" />
-                            </svg>
-                            <span>Ajouter Document</span>
-                        </button> --}}
                         <!-- Ajouter Document -->
                         <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
@@ -126,15 +106,6 @@
                             <span>Ajouter Document</span>
                         </button>
                     @endif
-                    {{-- <button
-                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                        <span>Renommer</span>
-                    </button> --}}
                     <!-- Renommer -->
                     <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                         class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
@@ -145,9 +116,7 @@
                         </svg>
                         <span>Renommer</span>
                     </button>
-                    <button
-                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        @click="openModalVerrou" wire:loading.attr="disabled">
+                    <button class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md" @click="openModalVerrou" wire:loading.attr="disabled">
 
                         @if ($infoPropriete)
                             @if ($infoPropriete->verrouille)
@@ -172,17 +141,6 @@
                         @endif
 
                     </button>
-
-                    {{-- <button
-                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                        wire:loading.attr="disabled">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M20 13V5a2 2 0 00-2-2H6a2 2 0 00-2 2v8M4 17h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
-                        </svg>
-                        <span>Archiver</span>
-                    </button> --}}
                     <!-- Archiver -->
                     <button
                         class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
