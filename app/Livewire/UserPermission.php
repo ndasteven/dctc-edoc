@@ -17,24 +17,24 @@ class UserPermission extends Component
     public array $permissions = [];
     public $infoPropriete;
 
-    public function mount($infoPropriete)
-    {
-        $this->entities = $infoPropriete;
-        $this->infoPropriete = $infoPropriete;
+    // public function mount($infoPropriete)
+    // {
+    //     $this->entities = $infoPropriete;
+    //     $this->infoPropriete = $infoPropriete;
 
-        // Précharger les permissions existantes
-        foreach (User::select('id')->get() as $user) {
-            $perm = ModelsUserPermission::where('user_id', $user->id)
-                ->where(function ($q) {
-                    $q->where('folder_id', $this->infoPropriete->id)->orWhere('document_id', $this->infoPropriete->id);
-                })
-                ->first();
+    //     // Précharger les permissions existantes
+    //     foreach (User::select('id')->get() as $user) {
+    //         $perm = ModelsUserPermission::where('user_id', $user->id)
+    //             ->where(function ($q) {
+    //                 $q->where('folder_id', $this->infoPropriete->id)->orWhere('document_id', $this->infoPropriete->id);
+    //             })
+    //             ->first();
 
-            if ($perm) {
-                $this->permissions[$user->id] = $perm->permission;
-            }
-        }
-    }
+    //         if ($perm) {
+    //             $this->permissions[$user->id] = $perm->permission;
+    //         }
+    //     }
+    // }
 
     public function searchUser()
     {

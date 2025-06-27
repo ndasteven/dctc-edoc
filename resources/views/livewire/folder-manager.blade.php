@@ -174,7 +174,7 @@
                         <div class="flex flex-col space-y-1">
                             @if ($permission === 'L')
                                 <span>
-                                    📄
+                                    👁️
                                 </span>
                             @elseif ($permission === 'E')
                                 <span>
@@ -203,7 +203,7 @@
                         <!-- Badges (en bas à gauche) -->
                         <div class="flex justify-between items-center mt-1">
                             <span class="bg-white text-gray-800 text-xs px-2 py-0.5 rounded">
-                                📄 {{ $folder->files_count }}
+                                👁️ {{ $folder->files_count }}
                             </span>
                             <span class="bg-white text-gray-800 text-xs px-2 py-0.5 rounded">
                                 📁 {{ $folder->children_count }}
@@ -290,7 +290,7 @@
                                 <!-- Badge de permission -->
                                 @if ($filePermission === 'L')
                                     <span>
-                                        📄
+                                        👁️
                                     </span>
                                 @elseif ($filePermission === 'E')
                                     <span>
