@@ -174,7 +174,7 @@
                         <div class="flex flex-col space-y-1">
                             @if ($permission === 'L')
                                 <span>
-                                    👁️
+                                    📄
                                 </span>
                             @elseif ($permission === 'E')
                                 <span>
@@ -182,7 +182,7 @@
                                 </span>
                             @elseif ($permission === 'LE')
                                 <span>
-                                    🔓
+                                    📝
                                 </span>
                             @else
                                 <span>
@@ -290,7 +290,7 @@
                                 <!-- Badge de permission -->
                                 @if ($filePermission === 'L')
                                     <span>
-                                        👁️
+                                        📄
                                     </span>
                                 @elseif ($filePermission === 'E')
                                     <span>
@@ -298,7 +298,7 @@
                                     </span>
                                 @elseif ($filePermission === 'LE')
                                     <span>
-                                        🔓
+                                        📝
                                     </span>
                                 @else
                                     <span>
