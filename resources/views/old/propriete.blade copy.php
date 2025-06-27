@@ -11,7 +11,7 @@
             <!-- Modal header -->
             <div class="flex items-center justify-between  border-b border-blue-400" style="padding: 20px ; ">
                 <h3 class="text-2xl font-semibold text-white">
-                    Actions sur un Dossier
+                    Actions sur un Dossier 
                 </h3>
                 <button type="button" id="closePropriete" wire:click="eraseInfoPropriete"
                     class="text-white hover:text-gray-300 bg-transparent rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center"
@@ -83,358 +83,166 @@
 
 
 
-                @php
-                    // Récupération de la permission selon le type (dossier ou document)
-                    if ($docClickPropriete === 'folder') {
-                        $permission = \App\Helpers\AccessHelper::getPermissionFor(
-                            auth()->id(),
-                            $idClickPropriete,
-                            null,
-                        );
-                    } elseif ($docClickPropriete === 'file') {
-                        $permission = \App\Helpers\AccessHelper::getPermissionFor(
-                            auth()->id(),
-                            null,
-                            $idClickPropriete,
-                        );
-                    } else {
-                        $permission = null;
-                    }
+                <!-- Partie droite (Actions) -->
 
-                    // Logique des permissions pour les DOSSIERS
-                    if ($docClickPropriete === 'folder') {
-                        // Permission 'L' (Lecture) : Créer Dossier, Ajouter Document
-                        $canCreateFolder = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
-                        $canAddDocument = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
-
-                        // Permission 'E' (Écriture) : + Renommer, Verrouiller
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
-
-                        // Permission 'LE' (Lecture + Écriture) : + Archiver, Supprimer, Droits & Sécurité
-                        $canArchive = in_array($permission, ['LE']) || $permission === null;
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
-                    }
-                    // Logique des permissions pour les DOCUMENTS
-                    elseif ($docClickPropriete === 'file') {
-                        // Permission 'L' (Lecture) : TOUT désactivé
-                        $canCreateFolder = false; // N/A pour les documents
-                        $canAddDocument = false; // N/A pour les documents
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canArchive = in_array($permission, ['E', 'LE']) || $permission === null;
-
-                        // Permission 'LE' (Lecture + Écriture) : TOUT activé
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
-                    }
-                    // Cas par défaut
-                    else {
-                        $canCreateFolder = true;
-                        $canAddDocument = true;
-                        $canRename = true;
-                        $canLock = true;
-                        $canArchive = true;
-                        $canDelete = true;
-                        $canManageRights = true;
-                    }
-                @endphp
-
+                
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 col-span-2">
                     @if ($docClickPropriete == 'folder')
-                        <!-- Créer Dossier - Visible pour L, E, LE (dossiers uniquement) -->
-                        @if ($canCreateFolder)
-                            <button data-modal-target="crud-modal" @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
-                                data-modal-toggle="crud-modal" @click="clickedcreatefolder"
-                                class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                                wire:loading.attr="disabled">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                                <span>Créer Dossier</span>
-                            </button>
-                        @else
-                            <button disabled
-                                class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                                <span>Créer Dossier</span>
-                            </button>
-                        @endif
-
-                        <!-- Ajouter Document - Visible pour L, E, LE (dossiers uniquement) -->
-                        @if ($canAddDocument)
-                            <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
-                                class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                                wire:loading.attr="disabled" @click="clickModal">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 4v16m8-8H4m4-4h12v12H8z" />
-                                </svg>
-                                <span>Ajouter Document</span>
-                            </button>
-                        @else
-                            <button disabled
-                                class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 4v16m8-8H4m4-4h12v12H8z" />
-                                </svg>
-                                <span>Ajouter Document</span>
-                            </button>
-                        @endif
-                    @endif
-
-                    <!-- Renommer - Dossier: E, LE | Document: E, LE -->
-                    @if ($canRename)
+                        <button data-modal-target="crud-modal" @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif data-modal-toggle="crud-modal"  @click="clickedcreatefolder"
+                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
+                            wire:loading.attr="disabled" >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Créer Dossier</span>
+                        </button>
+                        <!-- Ajouter Document -->
                         <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled"
-                            @if ($this->docClickPropriete == 'folder') @click='clickeditfolder' wire:click="getFolderId({{ $this->folderCreateId }})" @endif
-                            @if ($this->docClickPropriete == 'file') @click='clickeditFile' wire:click="getFileId({{ $this->folderCreateId }})" @endif>
+                            wire:loading.attr="disabled" @click="clickModal">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4m4-4h12v12H8z" />
                             </svg>
-                            <span>Renommer</span>
-                        </button>
-                    @else
-                        <button disabled
-                            class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                            <span>Renommer</span>
+                            <span>Ajouter Document</span>
                         </button>
                     @endif
+                    <!-- Renommer -->
+                    <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
+                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
+                        wire:loading.attr="disabled" @if ($this->docClickPropriete=='folder') @click='clickeditfolder' wire:click="getFolderId({{ $this->folderCreateId}})" @endif  @if ($this->docClickPropriete=='file') @click='clickeditFile' wire:click="getFileId({{ $this->folderCreateId }})" @endif>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        <span>Renommer</span>
+                    </button>
+                    <button class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md" @click="openModalVerrou" wire:loading.attr="disabled">
 
-                    <!-- Verrouiller/Déverrouiller - Dossier: E, LE | Document: E, LE -->
-                    @if ($canLock)
-                        <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            @click="openModalVerrou" wire:loading.attr="disabled">
-                            @if ($infoPropriete)
-                                @if ($infoPropriete->verrouille)
-                                    <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        fill="currentColor" viewBox="0 0 24 24">
-                                        <path fill-rule="evenodd"
-                                            d="M15 7a2 2 0 1 1 4 0v4a1 1 0 1 0 2 0V7a4 4 0 0 0-8 0v3H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2V7Zm-5 6a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>Dévérrouiller</span>
-                                @else
-                                    <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        fill="currentColor" viewBox="0 0 24 24">
-                                        <path fill-rule="evenodd"
-                                            d="M8 10V7a4 4 0 1 1 8 0v3h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h1Zm2-3a2 2 0 1 1 4 0v3h-4V7Zm2 6a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>Vérrouiller</span>
-                                @endif
+                        @if ($infoPropriete)
+                            @if ($infoPropriete->verrouille)
+                                <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd"
+                                        d="M15 7a2 2 0 1 1 4 0v4a1 1 0 1 0 2 0V7a4 4 0 0 0-8 0v3H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2V7Zm-5 6a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Dévérrouiller</span>
+                            @else
+                                <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd"
+                                        d="M8 10V7a4 4 0 1 1 8 0v3h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h1Zm2-3a2 2 0 1 1 4 0v3h-4V7Zm2 6a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Vérrouiller</span>
                             @endif
-                        </button>
-                    @else
-                        <button disabled
-                            class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M8 10V7a4 4 0 1 1 8 0v3h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h1Zm2-3a2 2 0 1 1 4 0v3h-4V7Zm2 6a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1Z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            <span>Vérrouiller</span>
-                        </button>
-                    @endif
+                        @endif
 
-                    <!-- Archiver - Dossier: LE uniquement | Document: E, LE -->
-                    @if ($canArchive)
-                        <button
-                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
-                            wire:loading.attr="disabled" onclick="openArchiveModal()">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M20 13V5a2 2 0 00-2-2H6a2 2 0 00-2 2v8M4 17h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
-                            </svg>
-                            <span>Archiver</span>
-                        </button>
-                    @else
-                        <button disabled
-                            class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M20 13V5a2 2 0 00-2-2H6a2 2 0 00-2 2v8M4 17h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
-                            </svg>
-                            <span>Archiver</span>
-                        </button>
-                    @endif
+                    </button>
+                    <!-- Archiver -->
+                    <button
+                        class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
+                        wire:loading.attr="disabled" onclick="openArchiveModal()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20 13V5a2 2 0 00-2-2H6a2 2 0 00-2 2v8M4 17h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        <span>Archiver</span>
+                    </button>
 
-                    <!-- Supprimer - Dossier: LE uniquement | Document: LE uniquement -->
-                    @if ($canDelete)
-                        <button
-                            class="flex items-center space-x-2 bg-red-500 hover:bg-red-400 px-4 py-3 rounded-lg shadow-md"
-                            id="bouttonDelete" data-folder-id="{{ $idClickPropriete }}"
-                            data-doc="{{ $docClickPropriete }}" wire:loading.attr="disabled"
-                            @if ($infoPropriete) @if ($infoPropriete->verrouille) disabled @endif
-                            @endif>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            <span>Supprimer</span>
-                        </button>
-                    @else
-                        <button disabled
-                            class="flex items-center space-x-2 bg-gray-400 px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            <span>Supprimer</span>
-                        </button>
-                    @endif
+                    <button
+                        class="flex items-center space-x-2 bg-red-500 hover:bg-red-400 px-4 py-3  rounded-lg shadow-md"
+                        id="bouttonDelete" data-folder-id="{{ $idClickPropriete }}"
+                        data-doc="{{ $docClickPropriete }}" wire:loading.attr="disabled"
+                        @if ($infoPropriete) @if ($infoPropriete->verrouille) disabled @endif
+                        @endif>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Supprimer</span>
+                    </button>
 
-                    <!-- Menu déroulant Droits & Sécurité - Dossier: LE uniquement | Document: LE uniquement -->
+                    <!-- Menu déroulant Droits & Sécurité -->
                     <div class="col-span-2">
-                        @if ($canManageRights)
-                            <button id="dropdownSecurityButton" data-dropdown-toggle="dropdownSecurity"
-                                class="inline-flex justify-between items-center w-full bg-blue-500 hover:bg-blue-400 text-white px-4 py-3 rounded-lg shadow-md"
-                                wire:loading.attr="disabled">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M12 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M17 11a5 5 0 10-10 0 5 5 0 0010 0z" />
-                                    </svg>
-                                    <span>Droits & Sécurité</span>
-                                </div>
-                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2"
+                        <button id="dropdownSecurityButton" data-dropdown-toggle="dropdownSecurity"
+                            class="inline-flex justify-between items-center w-full bg-blue-500 hover:bg-blue-400 text-white px-4 py-3 rounded-lg shadow-md"
+                            wire:loading.attr="disabled">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M17 11a5 5 0 10-10 0 5 5 0 0010 0z" />
                                 </svg>
-                            </button>
-
-                            <!-- Dropdown menu -->
-                            <div id="dropdownSecurity"
-                                class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
-                                style="width: 62%">
-                                <ul class="py-2 text-sm text-white dark:text-gray-200"
-                                    aria-labelledby="dropdownSecurityButton">
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li class="bg-blue-400">
-                                            <a href="#" @click="openPermission"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600">
-                                                Gérer les permissions
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    <hr>
-                                    <li>
-                                        <a href="#" @click="showModal = true"
-                                            onclick="openAccessHistoryModal()"
-                                            class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                            Voir l'historique d'accès
-                                        </a>
-                                    </li>
-                                    <hr>
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li>
-                                            <a href="#" onclick="openRestrictUserModal()"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                                Restreindre les utilisateurs
-                                            </a>
-                                        </li>
-                                    @endif
-                                </ul>
+                                <span>Droits & Sécurité</span>
                             </div>
-                        @else
-                            <button disabled
-                                class="inline-flex justify-between items-center w-full bg-gray-400 text-white px-4 py-3 rounded-lg shadow-md opacity-50 cursor-not-allowed">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M12 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M17 11a5 5 0 10-10 0 5 5 0 0010 0z" />
-                                    </svg>
-                                    <span>Droits & Sécurité</span>
-                                </div>
-                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <!-- Dropdown menu -->
-                            <div id="dropdownSecurity"
-                                class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
-                                style="width: 62%">
-                                <ul class="py-2 text-sm text-white dark:text-gray-200 "
-                                    aria-labelledby="dropdownSecurityButton">
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li class="bg-blue-400">
-                                            <a href="#" @click="openPermission"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600 ">
-                                                Gérer les permissions
-                                            </a>
-                                        </li>
-                                    @endif
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                                    <hr>
-                                    {{-- <li>
+                        <!-- Dropdown menu -->
+                        <div id="dropdownSecurity"
+                            class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
+                            style="width: 62%">
+                            <ul class="py-2 text-sm text-white dark:text-gray-200 "
+                                aria-labelledby="dropdownSecurityButton">
+                                @if (isset($infoPropriete) && $infoPropriete->user_id==Auth::user()->id )
+                                    <li class="bg-blue-400">
+                                        <a href="#" @click="openPermission"
+                                            class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600 ">
+                                            Gérer les permissions
+                                        </a>
+                                    </li>   
+                                @endif
+                                
+                                <hr>
+                                {{-- <li>
                                     <a href="#"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
                                         Voir l’historique d’accès
                                     </a>
                                 </li> --}}
 
-                                    <li>
-                                        <a href="#" @click="showModal = true"
-                                            onclick="openAccessHistoryModal()"
-                                            class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                            Voir l’historique d’accès
-                                        </a>
-                                    </li>
-                                    <hr>
-                                    {{-- <li>
+                                <li>
+                                    <a href="#" @click="showModal = true" onclick="openAccessHistoryModal()"
+                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
+                                        Voir l’historique d’accès
+                                    </a>
+                                </li>
+                                <hr>
+                                {{-- <li>
                                     <a href="#"
                                         class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
                                         Restreindre les utilisateurs
                                     </a>
                                 </li> --}}
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li>
-                                            <a href="#" onclick="openRestrictUserModal()"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                                Restreindre les utilisateurs
-                                            </a>
-                                        </li>
-                                    @endif
-                                </ul>
-                            </div>
-                        @endif
+                                @if (isset($infoPropriete) && $infoPropriete->user_id==Auth::user()->id )
+                                <li>
+                                    <a href="#" onclick="openRestrictUserModal()"
+                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
+                                        Restreindre les utilisateurs
+                                    </a>
+                                </li>
+                                @endif
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-
-
+            
+            
             {{-- le modal pour permission ici --}}
-            @if ($infoPropriete && $docClickPropriete)
-                @livewire('user-permission', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
+            @if (($infoPropriete && $docClickPropriete))
+            @livewire('user-permission',['infoPropriete'=>$infoPropriete, 'docClickPropriete'=>$docClickPropriete])
             @endif
             <style>
                 .modal-open {
@@ -622,6 +430,8 @@
 </div>
 
 <script>
+
+
     // === Fonctions pour les modaux ===
     function openArchiveModal() {
         document.getElementById('archiveModal').classList.remove("hidden");

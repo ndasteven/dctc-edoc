@@ -83,6 +83,8 @@
 
 
 
+                <!-- Partie droite (Actions) -->
+
                 @php
                     // Récupération de la permission selon le type (dossier ou document)
                     if ($docClickPropriete === 'folder') {
@@ -101,49 +103,19 @@
                         $permission = null;
                     }
 
-                    // Logique des permissions pour les DOSSIERS
-                    if ($docClickPropriete === 'folder') {
-                        // Permission 'L' (Lecture) : Créer Dossier, Ajouter Document
-                        $canCreateFolder = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
-                        $canAddDocument = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
-
-                        // Permission 'E' (Écriture) : + Renommer, Verrouiller
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
-
-                        // Permission 'LE' (Lecture + Écriture) : + Archiver, Supprimer, Droits & Sécurité
-                        $canArchive = in_array($permission, ['LE']) || $permission === null;
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
-                    }
-                    // Logique des permissions pour les DOCUMENTS
-                    elseif ($docClickPropriete === 'file') {
-                        // Permission 'L' (Lecture) : TOUT désactivé
-                        $canCreateFolder = false; // N/A pour les documents
-                        $canAddDocument = false; // N/A pour les documents
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canArchive = in_array($permission, ['E', 'LE']) || $permission === null;
-
-                        // Permission 'LE' (Lecture + Écriture) : TOUT activé
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
-                    }
-                    // Cas par défaut
-                    else {
-                        $canCreateFolder = true;
-                        $canAddDocument = true;
-                        $canRename = true;
-                        $canLock = true;
-                        $canArchive = true;
-                        $canDelete = true;
-                        $canManageRights = true;
-                    }
+                    // Définir les permissions disponibles pour chaque action
+                    $canCreateFolder = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
+                    $canAddDocument = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
+                    $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
+                    $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
+                    $canArchive = in_array($permission, ['LE']) || $permission === null;
+                    $canDelete = in_array($permission, ['LE']) || $permission === null;
+                    $canManageRights = in_array($permission, ['LE']) || $permission === null;
                 @endphp
 
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 col-span-2">
                     @if ($docClickPropriete == 'folder')
-                        <!-- Créer Dossier - Visible pour L, E, LE (dossiers uniquement) -->
+                        <!-- Créer Dossier - Visible pour L, E, LE -->
                         @if ($canCreateFolder)
                             <button data-modal-target="crud-modal" @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                                 data-modal-toggle="crud-modal" @click="clickedcreatefolder"
@@ -166,7 +138,7 @@
                             </button>
                         @endif
 
-                        <!-- Ajouter Document - Visible pour L, E, LE (dossiers uniquement) -->
+                        <!-- Ajouter Document - Visible pour L, E, LE -->
                         @if ($canAddDocument)
                             <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                                 class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
@@ -191,8 +163,28 @@
                         @endif
                     @endif
 
-                    <!-- Renommer - Dossier: E, LE | Document: E, LE -->
+                    <!-- Renommer - Visible pour E, LE -->
                     @if ($canRename)
+                        <button data-modal-target="crud-modal" @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
+                            data-modal-toggle="crud-modal" @click="clickedcreatefolder"
+                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
+                            wire:loading.attr="disabled">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Créer Dossier</span>
+                        </button>
+                        <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
+                            class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
+                            wire:loading.attr="disabled" @click="clickModal">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 4v16m8-8H4m4-4h12v12H8z" />
+                            </svg>
+                            <span>Ajouter Document</span>
+                        </button>
                         <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled"
@@ -217,7 +209,7 @@
                         </button>
                     @endif
 
-                    <!-- Verrouiller/Déverrouiller - Dossier: E, LE | Document: E, LE -->
+                    <!-- Verrouiller/Déverrouiller - Visible pour E, LE -->
                     @if ($canLock)
                         <button
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
@@ -256,7 +248,7 @@
                         </button>
                     @endif
 
-                    <!-- Archiver - Dossier: LE uniquement | Document: E, LE -->
+                    <!-- Archiver - Visible uniquement pour LE -->
                     @if ($canArchive)
                         <button
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
@@ -280,7 +272,7 @@
                         </button>
                     @endif
 
-                    <!-- Supprimer - Dossier: LE uniquement | Document: LE uniquement -->
+                    <!-- Supprimer - Visible uniquement pour LE -->
                     @if ($canDelete)
                         <button
                             class="flex items-center space-x-2 bg-red-500 hover:bg-red-400 px-4 py-3 rounded-lg shadow-md"
@@ -305,7 +297,7 @@
                         </button>
                     @endif
 
-                    <!-- Menu déroulant Droits & Sécurité - Dossier: LE uniquement | Document: LE uniquement -->
+                    <!-- Menu déroulant Droits & Sécurité - Visible uniquement pour LE -->
                     <div class="col-span-2">
                         @if ($canManageRights)
                             <button id="dropdownSecurityButton" data-dropdown-toggle="dropdownSecurity"
@@ -379,56 +371,20 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <!-- Dropdown menu -->
-                            <div id="dropdownSecurity"
-                                class="z-10 hidden bg-blue-500 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700"
-                                style="width: 62%">
-                                <ul class="py-2 text-sm text-white dark:text-gray-200 "
-                                    aria-labelledby="dropdownSecurityButton">
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li class="bg-blue-400">
-                                            <a href="#" @click="openPermission"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-600 ">
-                                                Gérer les permissions
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    <hr>
-                                    {{-- <li>
-                                    <a href="#"
-                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
-                                        Voir l’historique d’accès
-                                    </a>
-                                </li> --}}
-
-                                    <li>
-                                        <a href="#" @click="showModal = true"
-                                            onclick="openAccessHistoryModal()"
-                                            class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                            Voir l’historique d’accès
-                                        </a>
-                                    </li>
-                                    <hr>
-                                    {{-- <li>
-                                    <a href="#"
-                                        class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600 ">
-                                        Restreindre les utilisateurs
-                                    </a>
-                                </li> --}}
-                                    @if (isset($infoPropriete) && $infoPropriete->user_id == Auth::user()->id)
-                                        <li>
-                                            <a href="#" onclick="openRestrictUserModal()"
-                                                class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-gray-600">
-                                                Restreindre les utilisateurs
-                                            </a>
-                                        </li>
-                                    @endif
-                                </ul>
-                            </div>
                         @endif
                     </div>
                 </div>
+
+                {{-- Le modal pour permission ici --}}
+                @if ($infoPropriete && $docClickPropriete)
+                    @livewire('user-permission', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
+                @endif
+
+                <style>
+                    .modal-open {
+                        overflow: hidden;
+                    }
+                </style>
             </div>
 
 

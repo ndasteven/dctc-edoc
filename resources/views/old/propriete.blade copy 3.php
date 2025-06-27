@@ -83,6 +83,7 @@
 
 
 
+                <!-- Partie droite (Actions) -->
                 @php
                     // Récupération de la permission selon le type (dossier ou document)
                     if ($docClickPropriete === 'folder') {
@@ -429,18 +430,29 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Le modal pour permission ici --}}
+                @if ($infoPropriete && $docClickPropriete)
+                    @livewire('user-permission', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
+                @endif
+
+                <style>
+                    .modal-open {
+                        overflow: hidden;
+                    }
+                </style>
             </div>
 
 
             {{-- le modal pour permission ici --}}
-            @if ($infoPropriete && $docClickPropriete)
+            {{-- @if ($infoPropriete && $docClickPropriete)
                 @livewire('user-permission', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
             @endif
             <style>
                 .modal-open {
                     overflow: hidden;
                 }
-            </style>
+            </style> --}}
 
             <!-- Modal verrouillage -->
 
