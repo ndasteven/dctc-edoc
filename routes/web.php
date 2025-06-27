@@ -99,10 +99,3 @@ Route::get('/folders/{folderId?}', function (?int $folderId = null) {
 
 
     // =================================== route ajoute pas kevin N'doufou
-
-    //  Route pour la gestion des permission: ajouter une permition et ou la mettre a jour
-Route::post('/permissions', [UserPermissionController::class, 'store'])->name('permissions.store');
-// Route::post('/permissions/update', [UserPermissionController::class, 'update'])->name('permissions.update');
-
-Route::get('/permissions/{type}/{id}', [UserPermissionController::class, 'show'])
-    ->name('permissions.show');
