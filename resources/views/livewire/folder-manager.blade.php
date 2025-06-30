@@ -93,6 +93,12 @@
                 </button>
             </div>
         @endif
+        @if (session()->has('message'))
+    <div class="p-2 text-sm text-green-700 bg-green-100 rounded">
+        {!! session('message') !!}
+    </div>
+@endif
+
 
         @if (count($folders) > 0 or count($fichiers) > 0)
             <!-- supprimmer la selection -->

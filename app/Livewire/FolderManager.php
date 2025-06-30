@@ -454,41 +454,116 @@ class FolderManager extends Component
     }
     // les fonction de suppression Multiple de folders ou et files
 
-    public function deleteSelectedItems(array $items)
-    {
-        \Log::info("deleteSelectedItems appelé", compact('items'));
+   public function deleteSelectedItems(array $items)
+{
+    \Log::info("deleteSelectedItems appelé", compact('items'));
 
-        $deletedFolders = 0;
-        $deletedFiles = 0;
+    $deletedFolders = 0;
+    $deletedFiles = 0;
+    $skippedFolders = 0;
+    $skippedFiles = 0;
+    $lockedItems = [];
 
-        foreach ($items as $item) {
-            if (!isset($item['id'], $item['type'])) continue;
+    foreach ($items as $item) {
+        if (!isset($item['id'], $item['type'])) continue;
 
-            $id = intval($item['id']);
-            $type = $item['type'];
+        $id = intval($item['id']);
+        $type = $item['type'];
 
-            if ($type === 'folder') {
-                $folder = Folder::find($id);
-                if ($folder&& !$folder->verrouille) {
-                    $this->deleteFolderRecursively($folder);
-                    $deletedFolders++;
+        if ($type === 'folder') {
+            $folder = Folder::with(['files', 'children.files', 'children.children'])->find($id);
+
+            if ($folder) {
+                $lockedInFolder = $this->getLockedItemsInFolder($folder);
+                if ($folder->verrouille) {
+                    $skippedFolders++;
+                    $lockedItems[] = "📁 " . $folder->name;
+                    continue;
                 }
-            }
 
-            if ($type === 'file') {
-                $file = Document::find($id);
-                if ($file && !$file->verrouille) {
-                    $this->deleteFileDirect($file);
-                    $deletedFiles++;
+                if (!empty($lockedInFolder)) {
+                    $skippedFolders++;
+                    $lockedItems = array_merge($lockedItems, $lockedInFolder);
+                    continue;
                 }
+
+                $this->deleteFolderRecursively($folder);
+                $deletedFolders++;
             }
         }
 
-        session()->flash('message', "$deletedFolders dossier(s) et $deletedFiles fichier(s) supprimé(s).");
-        $this->dispatch('foldersUpdated');
-        $this->dispatch('filesUpdated');
-        $this->dispatch('resetJS');
+        if ($type === 'file') {
+            $file = Document::find($id);
+            if ($file) {
+                if ($file->verrouille) {
+                    $skippedFiles++;
+                    $lockedItems[] = "📄 " . $file->nom;
+                    continue;
+                }
+
+                $this->deleteFileDirect($file);
+                $deletedFiles++;
+            }
+        }
     }
+
+    $message = "✅ $deletedFolders dossier(s) et $deletedFiles fichier(s) supprimé(s).";
+
+    if (!empty($lockedItems)) {
+        $message .= "<br>⚠️ Car Certains éléments sont verrouillés :<br>" .
+                    implode('<br>', $lockedItems);
+    }
+
+    session()->flash('message', $message);
+    $this->dispatch('foldersUpdated');
+    $this->dispatch('filesUpdated');
+    $this->dispatch('resetJS');
+}
+protected function getLockedItemsInFolder(Folder $folder): array
+{
+    $locked = [];
+
+    // Vérifie les fichiers du dossier
+    foreach ($folder->files as $file) {
+        if ($file->verrouille) {
+            $locked[] = "📄 " . $file->nom;
+        }
+    }
+
+    // Vérifie les sous-dossiers
+    foreach ($folder->children as $child) {
+        if ($child->verrouille) {
+            $locked[] = "📁 " . $child->name;
+        }
+
+        // Vérifie récursivement les sous-dossiers
+        $locked = array_merge($locked, $this->getLockedItemsInFolder($child));
+    }
+
+    return $locked;
+}
+
+
+
+private function containsLockedItems(Folder $folder): bool
+{
+    // Si le dossier est verrouillé lui-même
+    if ($folder->verrouille) return true;
+
+    // Vérifie les fichiers du dossier
+    foreach ($folder->files as $file) {
+        if ($file->verrouille) return true;
+    }
+
+    // Vérifie les sous-dossiers récursivement
+    foreach ($folder->children as $subfolder) {
+        $subfolder->loadMissing(['files', 'children']);
+        if ($this->containsLockedItems($subfolder)) return true;
+    }
+
+    return false;
+}
+
 
 
     protected function deleteFolderRecursively(folder $folder)
