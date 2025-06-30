@@ -137,7 +137,7 @@
                         style="background-image: url({{ asset('img/folder.png') }});"
                         data-dropdown-id="dropdownRight-{{ $folder->id }}" data-dropdown-placement="right">
                         <!-- selection folder -->
-                        @if (!$folder->verrouille)
+                        @if (!$folder->verrouille && $permission !== 'L')
                             <input type="checkbox" class="checkbox-item hidden" value="{{ $folder->id }}"
                                 data-type="folder">
                         @endif
@@ -260,7 +260,7 @@
                         data-dropdown-id="dropdownRight-{{ $file->id }}"
                         style="background-image:  url('@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif');">
                         <!-- selection file -->
-                        @if (!$file->verrouille)
+                        @if (!$file->verrouille && $filePermission !== 'L')
                             <input type="checkbox" class="checkbox-item hidden" value="{{ $file->id }}"
                                 data-type="file">
                         @endif
