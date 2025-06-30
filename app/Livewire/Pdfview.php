@@ -32,20 +32,37 @@ class PdfView extends Component
         $this->setButtonVisibility();
     }
 
+    // private function getPermissionFor($userId, $folderId = null, $documentId = null): ?string
+    // {
+    //     $query = UserPermission::where('user_id', $userId);
+
+    //     if ($folderId !== null) {
+    //         $query->where('folder_id', $folderId);
+    //     }
+
+    //     if ($documentId !== null) {
+    //         $query->where('document_id', $documentId);
+    //     }
+
+    //     return $query->value('permission');
+    // }
     private function getPermissionFor($userId, $folderId = null, $documentId = null): ?string
-    {
-        $query = UserPermission::where('user_id', $userId);
+{
+    // 1. Vérifie s’il y a une permission directe sur le document
+    $permission = UserPermission::where('user_id', $userId)
+        ->where('document_id', $documentId)
+        ->value('permission');
 
-        if ($folderId !== null) {
-            $query->where('folder_id', $folderId);
-        }
-
-        if ($documentId !== null) {
-            $query->where('document_id', $documentId);
-        }
-
-        return $query->value('permission');
+    if ($permission) {
+        return $permission;
     }
+
+    // 2. Sinon, vérifie une permission sur le dossier contenant
+    return UserPermission::where('user_id', $userId)
+        ->where('folder_id', $folderId)
+        ->value('permission');
+}
+
 
     private function setButtonVisibility()
     {

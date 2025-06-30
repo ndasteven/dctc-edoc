@@ -94,4 +94,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserPermission::class);
     }
+
+
+    // ajouter par kevin N'doufou
+    public function hasAnyPermission(): bool
+    {
+        return $this->permissions()
+            ->where(function ($query) {
+                $query->whereNotNull('folder_id')->orWhereNotNull('document_id');
+            })
+            ->exists();
+    }
 }
