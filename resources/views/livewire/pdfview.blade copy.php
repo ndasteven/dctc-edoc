@@ -76,14 +76,14 @@
                 });
             });
         </script> --}}
-                        <div class="flex justify-end items-center space-x-2 mb-2">
-                            <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
-                                ➖ Zoom -
-                            </button>
-                            <button id="zoom-in" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
-                                ➕ Zoom +
-                            </button>
-                        </div>
+        <div class="flex justify-end items-center space-x-2 mb-2">
+    <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
+        ➖ Zoom -
+    </button>
+    <button id="zoom-in" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
+        ➕ Zoom +
+    </button>
+</div>
 
                         <div id="pdf-container" class="w-full h-[500px] overflow-auto bg-gray-100 p-4 text-center">
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
@@ -100,7 +100,7 @@
                         </div>
 
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-                        {{-- <script>
+                        <script>
                             document.addEventListener('DOMContentLoaded', () => {
                                 const url = "{{ asset('storage/' . $document->filename) }}";
 
@@ -165,90 +165,6 @@
                                 nextBtn.addEventListener('click', () => {
                                     if (currentPage < totalPages) {
                                         currentPage++;
-                                        renderPage(currentPage);
-                                    }
-                                });
-                            });
-                        </script> --}}
-                        <script>
-                            document.addEventListener('DOMContentLoaded', () => {
-                                const url = "{{ asset('storage/' . $document->filename) }}";
-
-                                const canvas = document.getElementById('pdf-canvas');
-                                const ctx = canvas.getContext('2d');
-                                const prevBtn = document.getElementById('prev-page');
-                                const nextBtn = document.getElementById('next-page');
-                                const pageInfo = document.getElementById('page-info');
-                                const zoomInBtn = document.getElementById('zoom-in');
-                                const zoomOutBtn = document.getElementById('zoom-out');
-
-                                let pdfDoc = null;
-                                let currentPage = 1;
-                                let totalPages = 0;
-                                let currentScale = 1;
-                                const scaleStep = 0.25;
-
-                                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                                const renderPage = (pageNum) => {
-                                    pdfDoc.getPage(pageNum).then(page => {
-                                        // Calcul automatique du scale par défaut
-                                        const containerWidth = document.getElementById('pdf-container').clientWidth;
-                                        const baseViewport = page.getViewport({
-                                            scale: 1
-                                        });
-                                        const defaultScale = containerWidth / baseViewport.width;
-                                        const effectiveScale = defaultScale * currentScale;
-
-                                        const viewport = page.getViewport({
-                                            scale: effectiveScale
-                                        });
-                                        canvas.width = viewport.width;
-                                        canvas.height = viewport.height;
-
-                                        const renderContext = {
-                                            canvasContext: ctx,
-                                            viewport: viewport
-                                        };
-
-                                        page.render(renderContext);
-                                        pageInfo.textContent = `Page ${pageNum} sur ${totalPages}`;
-                                        prevBtn.disabled = pageNum <= 1;
-                                        nextBtn.disabled = pageNum >= totalPages;
-                                    });
-                                };
-
-                                pdfjsLib.getDocument(url).promise.then(pdf => {
-                                    pdfDoc = pdf;
-                                    totalPages = pdf.numPages;
-                                    renderPage(currentPage);
-                                }).catch(err => {
-                                    canvas.parentElement.innerHTML = `<p class="text-red-600">Erreur PDF : ${err.message}</p>`;
-                                });
-
-                                prevBtn.addEventListener('click', () => {
-                                    if (currentPage > 1) {
-                                        currentPage--;
-                                        renderPage(currentPage);
-                                    }
-                                });
-
-                                nextBtn.addEventListener('click', () => {
-                                    if (currentPage < totalPages) {
-                                        currentPage++;
-                                        renderPage(currentPage);
-                                    }
-                                });
-
-                                zoomInBtn.addEventListener('click', () => {
-                                    currentScale += scaleStep;
-                                    renderPage(currentPage);
-                                });
-
-                                zoomOutBtn.addEventListener('click', () => {
-                                    if (currentScale > scaleStep) {
-                                        currentScale -= scaleStep;
                                         renderPage(currentPage);
                                     }
                                 });
