@@ -35,7 +35,7 @@
                     @endif
                 </div> --}}
                 <!-- Aperçu du document (colonne principale) -->
-                <div class="col-span-3">
+                <div id="main-viewer" class="col-span-3">
                     @php
                         $isPDF = in_array($document->type, ['pdf', 'PDF']);
                         $isImageOrText = in_array($document->type, ['txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
@@ -43,40 +43,14 @@
                     @endphp
 
                     @if ($isPDF && $readOnly)
-                        {{-- Lecture seule → PDF.js sans les boutons --}}
-                        {{-- <div id="pdf-container" class="w-full h-[500px] overflow-auto bg-gray-100 p-4">
-            <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
-        </div>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const url = "{{ asset('storage/' . $document->filename) }}";
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
-
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                pdfjsLib.getDocument(url).promise.then(pdf => {
-                    return pdf.getPage(1).then(page => {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({ scale });
-
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-
-                        const renderContext = {
-                            canvasContext: ctx,
-                            viewport: viewport
-                        };
-                        return page.render(renderContext).promise;
-                    });
-                }).catch(err => {
-                    canvas.parentElement.innerHTML = `<p class="text-red-600">Erreur lors du chargement du document : ${err.message}</p>`;
-                });
-            });
-        </script> --}}
                         <div class="flex justify-end items-center space-x-2 mb-2">
+                             <button id="prev-page"
+                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
+                                    Précédent</button>
+                                <span id="page-info" class="text-gray-800 font-semibold"></span>
+                                <button id="next-page"
+                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">Suivant
+                                    ▶</button>
                             <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
                                 ➖ Zoom -
                             </button>
@@ -89,87 +63,11 @@
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
 
                             <div class="mt-4 flex justify-center items-center space-x-4">
-                                <button id="prev-page"
-                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
-                                    Précédent</button>
-                                <span id="page-info" class="text-gray-800 font-semibold"></span>
-                                <button id="next-page"
-                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">Suivant
-                                    ▶</button>
                             </div>
                         </div>
 
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-                        {{-- <script>
-                            document.addEventListener('DOMContentLoaded', () => {
-                                const url = "{{ asset('storage/' . $document->filename) }}";
 
-                                const canvas = document.getElementById('pdf-canvas');
-                                const ctx = canvas.getContext('2d');
-                                const prevBtn = document.getElementById('prev-page');
-                                const nextBtn = document.getElementById('next-page');
-                                const pageInfo = document.getElementById('page-info');
-
-                                let pdfDoc = null;
-                                let currentPage = 1;
-                                let totalPages = 0;
-
-                                const renderPage = (pageNum) => {
-                                    pdfDoc.getPage(pageNum).then(page => {
-                                        // const scale = 1.5;
-                                        // Calcul dynamique du scale pour éviter le scroll horizontal
-                                        const containerWidth = document.getElementById('pdf-container').clientWidth;
-                                        const unscaledViewport = page.getViewport({
-                                            scale: 1.5
-                                        });
-                                        const scale = containerWidth / unscaledViewport.width;
-
-                                        const viewport = page.getViewport({
-                                            scale
-                                        });
-
-                                        canvas.height = viewport.height;
-                                        canvas.width = viewport.width;
-
-                                        const renderContext = {
-                                            canvasContext: ctx,
-                                            viewport: viewport
-                                        };
-
-                                        page.render(renderContext);
-                                        pageInfo.textContent = `Page ${pageNum} sur ${totalPages}`;
-                                        prevBtn.disabled = pageNum <= 1;
-                                        nextBtn.disabled = pageNum >= totalPages;
-                                    });
-                                };
-
-                                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                                pdfjsLib.getDocument(url).promise.then(pdf => {
-                                    
-                                    pdfDoc = pdf;
-                                    totalPages = pdf.numPages;
-                                    renderPage(currentPage);
-                                }).catch(err => {
-                                    canvas.parentElement.innerHTML = `<p class="text-red-600">Erreur PDF : ${err.message}</p>`;
-                                });
-
-                                prevBtn.addEventListener('click', () => {
-                                    if (currentPage > 1) {
-                                        currentPage--;
-                                        renderPage(currentPage);
-                                    }
-                                });
-
-                                nextBtn.addEventListener('click', () => {
-                                    if (currentPage < totalPages) {
-                                        currentPage++;
-                                        renderPage(currentPage);
-                                    }
-                                });
-                            });
-                        </script> --}}
                         <script>
                             document.addEventListener('DOMContentLoaded', () => {
                                 const url = "{{ asset('storage/' . $document->filename) }}";
@@ -270,7 +168,12 @@
 
 
                 <!-- Informations supplémentaires (colonne secondaire) -->
-                <aside
+                <button id="toggle-aside"
+                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                    ⬅️ Masquer infos
+                </button>
+
+                <aside id="doc-aside"
                     class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Informations sur le document</h2>
                     <ul class="mt-4 space-y-2 text-gray-600 dark:text-gray-400">
@@ -555,4 +458,51 @@
 
         })();
     </script>
+    {{-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aside = document.getElementById('doc-aside');
+            const toggleBtn = document.getElementById('toggle-aside');
+
+            let isVisible = true;
+
+            toggleBtn.addEventListener('click', () => {
+                isVisible = !isVisible;
+
+                if (isVisible) {
+                    aside.classList.remove('hidden');
+                    toggleBtn.innerHTML = '⬅️ Masquer infos';
+                } else {
+                    aside.classList.add('hidden');
+                    toggleBtn.innerHTML = '➡️ Afficher infos';
+                }
+            });
+        });
+    </script> --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const aside = document.getElementById('doc-aside');
+        const mainViewer = document.getElementById('main-viewer');
+        const toggleBtn = document.getElementById('toggle-aside');
+
+        let isVisible = true;
+
+        toggleBtn.addEventListener('click', () => {
+            isVisible = !isVisible;
+
+            if (isVisible) {
+                aside.classList.remove('hidden');
+                mainViewer.classList.remove('col-span-4');
+                mainViewer.classList.add('col-span-3');
+                toggleBtn.innerHTML = '⬅️ Masquer infos';
+            } else {
+                aside.classList.add('hidden');
+                mainViewer.classList.remove('col-span-3');
+                mainViewer.classList.add('col-span-4');
+                toggleBtn.innerHTML = '➡️ Afficher infos';
+            }
+        });
+    });
+</script>
+
+
 </div>
