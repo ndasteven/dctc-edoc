@@ -127,7 +127,7 @@
 
                         // Permission 'LE' (Lecture + Écriture) : TOUT activé
                         $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
+                        $canManageRights = in_array($permission, ['L','E','LE']) || $permission === null;
                     }
                     // Cas par défaut
                     else {
