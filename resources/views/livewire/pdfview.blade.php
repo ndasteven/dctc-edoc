@@ -4,7 +4,7 @@
         <div
             class="relative w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
             <!-- En-tête -->
-            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
+            {{-- <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
                 <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
                     <div class="inline-flex space-x-2">
@@ -17,13 +17,49 @@
                         </span>
                     </div>
                 </button>
+                 <button id="toggle-aside"
+                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                    ⬅️ Masquer infos
+                </button>
+            </header> --}}
+            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
+                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
+                        <div class="inline-flex space-x-2 items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span>Retour</span>
+                        </div>
+                    </button>
+
+                    <button id="toggle-aside"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                        ⬅️ Masquer infos
+                    </button>
+                </div>
             </header>
+
             <!-- Contenu principal -->
             <div class="grid grid-cols-1 md:grid-cols-4">
                 <!-- Aperçu du document (colonne principale) -->
                 <div id="main-viewer" class="col-span-3">
                     @php
-                        $isPDF = in_array($document->type, ['pdf', 'PDF','txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
+                        $isPDF = in_array($document->type, [
+                            'pdf',
+                            'PDF',
+                            'txt',
+                            'png',
+                            'jpeg',
+                            'PNG',
+                            'JPEG',
+                            'jpg',
+                            'JPG',
+                        ]);
                         $isImageOrText = in_array($document->type, ['txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
                         $readOnly = $permission === 'L';
                     @endphp
@@ -132,10 +168,12 @@
                         </script>
                     @elseif ($isPDF || $isImageOrText)
                         {{-- 🖼️ PDF normal, TXT ou images --}}
-                        <iframe src="{{ asset('storage/' . $document->filename) }}"class="w-full h-[500px] border-none rounded-bl-lg"></iframe>
+                        <iframe
+                            src="{{ asset('storage/' . $document->filename) }}"class="w-full h-[500px] border-none rounded-bl-lg"></iframe>
                     @elseif ($isOfficeDocument)
                         {{-- 📁 Documents Office affichés depuis /archives --}}
-                        <iframe src="{{ asset('storage/archives/' . $nom) }}" class="w-full h-[500px] border-none rounded-bl-lg">
+                        <iframe src="{{ asset('storage/archives/' . $nom) }}"
+                            class="w-full h-[500px] border-none rounded-bl-lg">
                         </iframe>
                     @else
                         {{-- ❌ Format non reconnu --}}
@@ -148,10 +186,10 @@
                 </div>
 
                 <!-- Informations supplémentaires (colonne secondaire) -->
-                <button id="toggle-aside"
+                {{-- <button id="toggle-aside"
                     class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
                     ⬅️ Masquer infos
-                </button>
+                </button> --}}
 
                 <aside id="doc-aside"
                     class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
@@ -484,30 +522,30 @@
         });
     </script> --}}
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const toggleBtn = document.getElementById('toggle-aside');
-        const aside = document.getElementById('doc-aside');
-        const mainViewer = document.getElementById('main-viewer');
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('toggle-aside');
+            const aside = document.getElementById('doc-aside');
+            const mainViewer = document.getElementById('main-viewer');
 
-        let isHidden = false;
+            let isHidden = false;
 
-        toggleBtn.addEventListener('click', () => {
-            isHidden = !isHidden;
+            toggleBtn.addEventListener('click', () => {
+                isHidden = !isHidden;
 
-            if (isHidden) {
-                aside.classList.add('hidden');
-                mainViewer.classList.remove('col-span-3');
-                mainViewer.classList.add('col-span-4');
-                toggleBtn.innerHTML = '➡️ Afficher infos';
-            } else {
-                aside.classList.remove('hidden');
-                mainViewer.classList.remove('col-span-4');
-                mainViewer.classList.add('col-span-3');
-                toggleBtn.innerHTML = '⬅️ Masquer infos';
-            }
+                if (isHidden) {
+                    aside.classList.add('hidden');
+                    mainViewer.classList.remove('col-span-3');
+                    mainViewer.classList.add('col-span-4');
+                    toggleBtn.innerHTML = '➡️ Afficher infos';
+                } else {
+                    aside.classList.remove('hidden');
+                    mainViewer.classList.remove('col-span-4');
+                    mainViewer.classList.add('col-span-3');
+                    toggleBtn.innerHTML = '⬅️ Masquer infos';
+                }
+            });
         });
-    });
-</script>
+    </script>
 
 
 
