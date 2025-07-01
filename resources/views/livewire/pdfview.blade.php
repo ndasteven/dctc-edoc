@@ -196,10 +196,10 @@
                                     <span class="text-2xl">{{ $this->getPermissionIcon() }}</span>
                                     <span
                                         class="px-3 py-1 text-xs font-medium rounded-full
-                    @if ($permission === 'LE') bg-green-100 text-green-800
-                    @elseif($permission === 'E') bg-blue-100 text-blue-800
-                    @elseif($permission === 'L') bg-yellow-100 text-yellow-800
-                    @else bg-red-100 text-red-800 @endif">
+                                        @if ($permission === 'LE') bg-green-100 text-green-800
+                                        @elseif($permission === 'E') bg-blue-100 text-blue-800
+                                        @elseif($permission === 'L') bg-yellow-100 text-yellow-800
+                                        @else bg-red-100 text-red-800 @endif">
                                         {{ $this->getPermissionLabel() }}
                                     </span>
                                 </div>
@@ -245,9 +245,9 @@
                             <div class="pdf-content mb-6">
                                 <div
                                     class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <div class="text-4xl mb-4">📄</div>
+                                    {{-- <div class="text-4xl mb-4">📄</div>
                                     <p class="text-gray-600">Visualiseur PDF</p>
-                                    <p class="text-sm text-gray-500 mt-2">Le contenu du PDF sera affiché ici</p>
+                                    <p class="text-sm text-gray-500 mt-2">Le contenu du PDF sera affiché ici</p> --}}
                                 </div>
                             </div>
 
