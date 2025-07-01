@@ -28,20 +28,6 @@ class PdfView extends Component
         $this->setButtonVisibility();
     }
 
-    // private function getPermissionFor($userId, $folderId = null, $documentId = null): ?string
-    // {
-    //     $query = UserPermission::where('user_id', $userId);
-
-    //     if ($folderId !== null) {
-    //         $query->where('folder_id', $folderId);
-    //     }
-
-    //     if ($documentId !== null) {
-    //         $query->where('document_id', $documentId);
-    //     }
-
-    //     return $query->value('permission');
-    // }
     private function getPermissionFor($userId, $folderId = null, $documentId = null): ?string
     {
         // 1. Vérifie s’il y a une permission directe sur le document

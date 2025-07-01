@@ -4,7 +4,7 @@
         <div
             class="relative w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
             <!-- En-tête -->
-            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
+            {{-- <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
                 <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
                     <div class="inline-flex space-x-2">
@@ -17,119 +17,107 @@
                         </span>
                     </div>
                 </button>
+                 <button id="toggle-aside"
+                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                    ⬅️ Masquer infos
+                </button>
+            </header> --}}
+            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
+                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
+                        <div class="inline-flex space-x-2 items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span>Retour</span>
+                        </div>
+                    </button>
+
+                    <button id="toggle-aside"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                        ⬅️ Masquer infos
+                    </button>
+                </div>
             </header>
+
             <!-- Contenu principal -->
             <div class="grid grid-cols-1 md:grid-cols-4">
                 <!-- Aperçu du document (colonne principale) -->
-                {{-- 
-                <div class="col-span-3">
-                    @if (in_array($document->type, ['pdf', 'PDF', 'txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']))
-                        <iframe src="{{ asset('storage/' . $document->filename) }}"
-                            class="w-full h-[500px] border-none rounded-bl-lg"></iframe>
-                    @else
-                        -- Affichage PDF pour les document du paque office --}
-                        <iframe src="{{ asset('storage/archives/' . $nom) }}"
-                            class="w-full h-[500px] border-none rounded-bl-lg">
-                        </iframe>
-                        
-                    @endif
-                </div> --}}
-                <!-- Aperçu du document (colonne principale) -->
-                <div class="col-span-3">
+                <div id="main-viewer" class="col-span-3">
                     @php
-                        $isPDF = in_array($document->type, ['pdf', 'PDF']);
+                        $isPDF = in_array($document->type, [
+                            'pdf',
+                            'PDF',
+                            'txt',
+                            'png',
+                            'jpeg',
+                            'PNG',
+                            'JPEG',
+                            'jpg',
+                            'JPG',
+                        ]);
                         $isImageOrText = in_array($document->type, ['txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
                         $readOnly = $permission === 'L';
                     @endphp
-
                     @if ($isPDF && $readOnly)
-                        {{-- Lecture seule → PDF.js sans les boutons --}}
-                        {{-- <div id="pdf-container" class="w-full h-[500px] overflow-auto bg-gray-100 p-4">
-            <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
-        </div>
+                        {{-- 📄 PDF Lecture seule avec navigation personnalisée --}}
+                        <div class="flex justify-end items-center space-x-2 mb-2">
+                            <button id="prev-page"
+                                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
+                                Précédent</button>
+                            <span id="page-info" class="text-gray-800 font-semibold"></span>
+                            <button id="next-page"
+                                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">Suivant
+                                ▶</button>
+                            <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">➖
+                                Zoom -</button>
+                            <button id="zoom-in" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">➕
+                                Zoom +</button>
+                        </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const url = "{{ asset('storage/' . $document->filename) }}";
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
-
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                pdfjsLib.getDocument(url).promise.then(pdf => {
-                    return pdf.getPage(1).then(page => {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({ scale });
-
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-
-                        const renderContext = {
-                            canvasContext: ctx,
-                            viewport: viewport
-                        };
-                        return page.render(renderContext).promise;
-                    });
-                }).catch(err => {
-                    canvas.parentElement.innerHTML = `<p class="text-red-600">Erreur lors du chargement du document : ${err.message}</p>`;
-                });
-            });
-        </script> --}}
-        <div class="flex justify-end items-center space-x-2 mb-2">
-    <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
-        ➖ Zoom -
-    </button>
-    <button id="zoom-in" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded">
-        ➕ Zoom +
-    </button>
-</div>
-
-                        <div id="pdf-container" class="w-full h-[500px] overflow-auto bg-gray-100 p-4 text-center">
+                        <div id="pdf-container" class="w-full h-full overflow-auto bg-gray-100 p-4 text-center">
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
-
-                            <div class="mt-4 flex justify-center items-center space-x-4">
-                                <button id="prev-page"
-                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
-                                    Précédent</button>
-                                <span id="page-info" class="text-gray-800 font-semibold"></span>
-                                <button id="next-page"
-                                    class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">Suivant
-                                    ▶</button>
-                            </div>
                         </div>
 
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
                         <script>
                             document.addEventListener('DOMContentLoaded', () => {
                                 const url = "{{ asset('storage/' . $document->filename) }}";
-
                                 const canvas = document.getElementById('pdf-canvas');
                                 const ctx = canvas.getContext('2d');
                                 const prevBtn = document.getElementById('prev-page');
                                 const nextBtn = document.getElementById('next-page');
                                 const pageInfo = document.getElementById('page-info');
+                                const zoomInBtn = document.getElementById('zoom-in');
+                                const zoomOutBtn = document.getElementById('zoom-out');
 
                                 let pdfDoc = null;
                                 let currentPage = 1;
                                 let totalPages = 0;
+                                let currentScale = 1;
+                                const scaleStep = 0.25;
+
+                                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
                                 const renderPage = (pageNum) => {
                                     pdfDoc.getPage(pageNum).then(page => {
-                                        // const scale = 1.5;
-                                        // Calcul dynamique du scale pour éviter le scroll horizontal
                                         const containerWidth = document.getElementById('pdf-container').clientWidth;
-                                        const unscaledViewport = page.getViewport({
-                                            scale: 1.5
+                                        const baseViewport = page.getViewport({
+                                            scale: 1
                                         });
-                                        const scale = containerWidth / unscaledViewport.width;
+                                        const defaultScale = containerWidth / baseViewport.width;
+                                        const effectiveScale = defaultScale * currentScale;
 
                                         const viewport = page.getViewport({
-                                            scale
+                                            scale: effectiveScale
                                         });
-
-                                        canvas.height = viewport.height;
                                         canvas.width = viewport.width;
+                                        canvas.height = viewport.height;
 
                                         const renderContext = {
                                             canvasContext: ctx,
@@ -143,11 +131,7 @@
                                     });
                                 };
 
-                                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
                                 pdfjsLib.getDocument(url).promise.then(pdf => {
-                                    
                                     pdfDoc = pdf;
                                     totalPages = pdf.numPages;
                                     renderPage(currentPage);
@@ -168,25 +152,45 @@
                                         renderPage(currentPage);
                                     }
                                 });
+
+                                zoomInBtn.addEventListener('click', () => {
+                                    currentScale += scaleStep;
+                                    renderPage(currentPage);
+                                });
+
+                                zoomOutBtn.addEventListener('click', () => {
+                                    if (currentScale > scaleStep) {
+                                        currentScale -= scaleStep;
+                                        renderPage(currentPage);
+                                    }
+                                });
                             });
                         </script>
                     @elseif ($isPDF || $isImageOrText)
-                        {{-- Autres permissions ou types classiques (on garde l'iframe donc les boutons sont visibles) --}}
-                        <iframe src="{{ asset('storage/' . $document->filename) }}"
-                            class="w-full h-[500px] border-none rounded-bl-lg"></iframe>
+                        {{-- 🖼️ PDF normal, TXT ou images --}}
+                        <iframe src="{{ asset('storage/' . $document->filename) }}"class="w-full h-full border-none rounded-bl-lg"></iframe>
+                    @elseif ($isOfficeDocument)
+                        {{-- 📁 Documents Office affichés depuis /archives --}}
+                        <iframe src="{{ asset('storage/archives/' . $nom) }}"
+                            class="w-full h-full border-none rounded-bl-lg"> 
+                        </iframe>
                     @else
-                        {{-- Documents Office ou autres formats --}}
+                        {{-- ❌ Format non reconnu --}}
                         <div
-                            class="w-full h-[500px] bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
+                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
                             <p>Ce format de fichier n'est pas prévisualisable directement. <br> Téléchargez-le ou
                                 ouvrez-le dans une application compatible.</p>
                         </div>
                     @endif
                 </div>
 
-
                 <!-- Informations supplémentaires (colonne secondaire) -->
-                <aside
+                {{-- <button id="toggle-aside"
+                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
+                    ⬅️ Masquer infos
+                </button> --}}
+
+                <aside id="doc-aside"
                     class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Informations sur le document</h2>
                     <ul class="mt-4 space-y-2 text-gray-600 dark:text-gray-400">
@@ -471,4 +475,77 @@
 
         })();
     </script>
+    {{-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aside = document.getElementById('doc-aside');
+            const toggleBtn = document.getElementById('toggle-aside');
+
+            let isVisible = true;
+
+            toggleBtn.addEventListener('click', () => {
+                isVisible = !isVisible;
+
+                if (isVisible) {
+                    aside.classList.remove('hidden');
+                    toggleBtn.innerHTML = '⬅️ Masquer infos';
+                } else {
+                    aside.classList.add('hidden');
+                    toggleBtn.innerHTML = '➡️ Afficher infos';
+                }
+            });
+        });
+    </script> --}}
+    {{-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aside = document.getElementById('doc-aside');
+            const mainViewer = document.getElementById('main-viewer');
+            const toggleBtn = document.getElementById('toggle-aside');
+
+            let isVisible = true;
+
+            toggleBtn.addEventListener('click', () => {
+                isVisible = !isVisible;
+
+                if (isVisible) {
+                    aside.classList.remove('hidden');
+                    mainViewer.classList.remove('col-span-4');
+                    mainViewer.classList.add('col-span-3');
+                    toggleBtn.innerHTML = '⬅️ Masquer infos';
+                } else {
+                    aside.classList.add('hidden');
+                    mainViewer.classList.remove('col-span-3');
+                    mainViewer.classList.add('col-span-4');
+                    toggleBtn.innerHTML = '➡️ Afficher infos';
+                }
+            });
+        });
+    </script> --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('toggle-aside');
+            const aside = document.getElementById('doc-aside');
+            const mainViewer = document.getElementById('main-viewer');
+
+            let isHidden = false;
+
+            toggleBtn.addEventListener('click', () => {
+                isHidden = !isHidden;
+
+                if (isHidden) {
+                    aside.classList.add('hidden');
+                    mainViewer.classList.remove('col-span-3');
+                    mainViewer.classList.add('col-span-4');
+                    toggleBtn.innerHTML = '➡️ Afficher infos';
+                } else {
+                    aside.classList.remove('hidden');
+                    mainViewer.classList.remove('col-span-4');
+                    mainViewer.classList.add('col-span-3');
+                    toggleBtn.innerHTML = '⬅️ Masquer infos';
+                }
+            });
+        });
+    </script>
+
+
+
 </div>

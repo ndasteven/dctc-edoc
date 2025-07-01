@@ -4,24 +4,7 @@
         <div
             class="relative w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
             <!-- En-tête -->
-            {{-- <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
-                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
-                <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
-                    <div class="inline-flex space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span>
-                            Retour
-                        </span>
-                    </div>
-                </button>
-                 <button id="toggle-aside"
-                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
-                    ⬅️ Masquer infos
-                </button>
-            </header> --}}
+           
             <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
 
@@ -79,7 +62,7 @@
                                 Zoom +</button>
                         </div>
 
-                        <div id="pdf-container" class="w-full h-[500px] overflow-auto bg-gray-100 p-4 text-center">
+                        <div id="pdf-container" class="w-full h-full overflow-auto bg-gray-100 p-4 text-center">
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
                         </div>
 
@@ -168,29 +151,21 @@
                         </script>
                     @elseif ($isPDF || $isImageOrText)
                         {{-- 🖼️ PDF normal, TXT ou images --}}
-                        <iframe
-                            src="{{ asset('storage/' . $document->filename) }}"class="w-full h-[500px] border-none rounded-bl-lg"></iframe>
+                        <iframe src="{{ asset('storage/' . $document->filename) }}"class="w-full h-full border-none rounded-bl-lg"></iframe>
                     @elseif ($isOfficeDocument)
                         {{-- 📁 Documents Office affichés depuis /archives --}}
                         <iframe src="{{ asset('storage/archives/' . $nom) }}"
-                            class="w-full h-[500px] border-none rounded-bl-lg">
+                            class="w-full h-full border-none rounded-bl-lg"> 
                         </iframe>
                     @else
                         {{-- ❌ Format non reconnu --}}
                         <div
-                            class="w-full h-[500px] bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
+                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
                             <p>Ce format de fichier n'est pas prévisualisable directement. <br> Téléchargez-le ou
                                 ouvrez-le dans une application compatible.</p>
                         </div>
                     @endif
                 </div>
-
-                <!-- Informations supplémentaires (colonne secondaire) -->
-                {{-- <button id="toggle-aside"
-                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
-                    ⬅️ Masquer infos
-                </button> --}}
-
                 <aside id="doc-aside"
                     class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Informations sur le document</h2>
@@ -374,7 +349,6 @@
         </div>
     </div>
     <!-- PDF.js viewer (minimal) -->
-    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script> --}}
 
     <script>
         (function() {
@@ -476,51 +450,7 @@
 
         })();
     </script>
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const aside = document.getElementById('doc-aside');
-            const toggleBtn = document.getElementById('toggle-aside');
 
-            let isVisible = true;
-
-            toggleBtn.addEventListener('click', () => {
-                isVisible = !isVisible;
-
-                if (isVisible) {
-                    aside.classList.remove('hidden');
-                    toggleBtn.innerHTML = '⬅️ Masquer infos';
-                } else {
-                    aside.classList.add('hidden');
-                    toggleBtn.innerHTML = '➡️ Afficher infos';
-                }
-            });
-        });
-    </script> --}}
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const aside = document.getElementById('doc-aside');
-            const mainViewer = document.getElementById('main-viewer');
-            const toggleBtn = document.getElementById('toggle-aside');
-
-            let isVisible = true;
-
-            toggleBtn.addEventListener('click', () => {
-                isVisible = !isVisible;
-
-                if (isVisible) {
-                    aside.classList.remove('hidden');
-                    mainViewer.classList.remove('col-span-4');
-                    mainViewer.classList.add('col-span-3');
-                    toggleBtn.innerHTML = '⬅️ Masquer infos';
-                } else {
-                    aside.classList.add('hidden');
-                    mainViewer.classList.remove('col-span-3');
-                    mainViewer.classList.add('col-span-4');
-                    toggleBtn.innerHTML = '➡️ Afficher infos';
-                }
-            });
-        });
-    </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toggleBtn = document.getElementById('toggle-aside');
