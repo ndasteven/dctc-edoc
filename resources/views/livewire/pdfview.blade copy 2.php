@@ -1,11 +1,11 @@
 <div>
-    <div class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center">
         <!-- Conteneur principal -->
         <div
-            class="relative w-full h-screen bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 flex flex-col">
+            class="relative w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
             <!-- En-tête -->
-
-            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg flex-shrink-0">
+           
+            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
 
                 <div class="flex items-center space-x-4">
@@ -28,17 +28,27 @@
             </header>
 
             <!-- Contenu principal -->
-            <div class="grid grid-cols-1 md:grid-cols-4 flex-1 overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4">
                 <!-- Aperçu du document (colonne principale) -->
-                <div id="main-viewer" class="col-span-3 flex flex-col overflow-hidden">
+                <div id="main-viewer" class="col-span-3">
                     @php
-                        $isPDF = in_array($document->type, ['pdf', 'PDF']);
+                        $isPDF = in_array($document->type, [
+                            'pdf',
+                            'PDF',
+                            'txt',
+                            'png',
+                            'jpeg',
+                            'PNG',
+                            'JPEG',
+                            'jpg',
+                            'JPG',
+                        ]);
                         $isImageOrText = in_array($document->type, ['txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
                         $readOnly = $permission === 'L';
                     @endphp
                     @if ($isPDF && $readOnly)
                         {{-- 📄 PDF Lecture seule avec navigation personnalisée --}}
-                        <div class="flex justify-end items-center space-x-2 mb-2 px-4 pt-2 flex-shrink-0">
+                        <div class="flex justify-end items-center space-x-2 mb-2">
                             <button id="prev-page"
                                 class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
                                 Précédent</button>
@@ -52,7 +62,7 @@
                                 Zoom +</button>
                         </div>
 
-                        <div id="pdf-container" class="flex-1 overflow-auto bg-gray-100 p-4 text-center">
+                        <div id="pdf-container" class="w-full h-full overflow-auto bg-gray-100 p-4 text-center">
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
                         </div>
 
@@ -139,71 +149,25 @@
                                 });
                             });
                         </script>
-                        {{-- @elseif ($isPDF || $isImageOrText) --}}
-                        {{-- 🖼️ PDF normal, TXT ou images - AVEC HAUTEUR COMPLETE --}}
-                        {{-- <iframe src="{{ asset('storage/' . $document->filename) }}" class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0"></iframe> --}}
                     @elseif ($isPDF || $isImageOrText)
-                        {{-- 🖼️ PDF normal, TXT ou images - AVEC PROTECTION si lecture seule --}}
-                        @if ($readOnly && in_array($document->type, ['png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']))
-                            {{-- 🔒 Images en mode lecture seule avec protection --}}
-                            <div class="flex-1 overflow-auto bg-gray-100 p-4 text-center">
-                                <img id="protected-image" src="{{ asset('storage/' . $document->filename) }}"
-                                    class="mx-auto shadow-md rounded max-w-full h-auto" alt="Document protégé">
-                            </div>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', () => {
-                                    const img = document.getElementById('protected-image');
-
-                                    // Même protection que pour les PDFs
-                                    img.addEventListener('contextmenu', function(e) {
-                                        e.preventDefault();
-                                    });
-
-                                    img.addEventListener('dragstart', function(e) {
-                                        e.preventDefault();
-                                    });
-
-                                    // Désactiver la sélection
-                                    img.style.userSelect = 'none';
-                                    img.style.webkitUserSelect = 'none';
-                                    img.style.mozUserSelect = 'none';
-                                    img.style.msUserSelect = 'none';
-
-                                    // Désactiver le drag
-                                    img.style.webkitUserDrag = 'none';
-                                    img.style.mozUserDrag = 'none';
-                                    img.style.userDrag = 'none';
-
-                                    // Bloquer les tentatives de sauvegarde
-                                    img.addEventListener('mousedown', function(e) {
-                                        if (e.button === 0) { // Clic gauche
-                                            e.preventDefault();
-                                        }
-                                    });
-                                });
-                            </script>
-                        @else
-                            {{-- 🖼️ PDF normal, TXT ou images sans protection --}}
-                            <iframe src="{{ asset('storage/' . $document->filename) }}"
-                                class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0"></iframe>
-                        @endif
+                        {{-- 🖼️ PDF normal, TXT ou images --}}
+                        <iframe src="{{ asset('storage/' . $document->filename) }}"class="w-full h-full border-none rounded-bl-lg"></iframe>
                     @elseif ($isOfficeDocument)
-                        {{-- 📁 Documents Office affichés depuis /archives - AVEC HAUTEUR COMPLETE --}}
+                        {{-- 📁 Documents Office affichés depuis /archives --}}
                         <iframe src="{{ asset('storage/archives/' . $nom) }}"
-                            class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0">
+                            class="w-full h-full border-none rounded-bl-lg"> 
                         </iframe>
                     @else
                         {{-- ❌ Format non reconnu --}}
                         <div
-                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700 flex-1">
+                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
                             <p>Ce format de fichier n'est pas prévisualisable directement. <br> Téléchargez-le ou
                                 ouvrez-le dans une application compatible.</p>
                         </div>
                     @endif
                 </div>
                 <aside id="doc-aside"
-                    class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3 overflow-y-auto">
+                    class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Informations sur le document</h2>
                     <ul class="mt-4 space-y-2 text-gray-600 dark:text-gray-400">
                         <li><strong>Titre :</strong> {{ $document->nom }}</li>
@@ -376,10 +340,15 @@
                         @endif
 
                     </div>
+
+
+
+
                 </aside>
             </div>
         </div>
     </div>
+    <!-- PDF.js viewer (minimal) -->
 
     <script>
         (function() {
@@ -390,7 +359,7 @@
 
             if (!IS_READONLY) return;
 
-            alert('[🔒] Mode lecture seule activé');
+            console.log('[🔒] Mode lecture seule activé');
 
             // 🔒 Blocage clic droit global
             document.addEventListener('contextmenu', function(e) {
@@ -432,7 +401,7 @@
                     @media print {
                         body * { display: none !important; }
                         body::after {
-                            content: "Impression désactivée - Document protégé, vous êtes en mode lecture seul:\ 🔒 Blocage impression veillez bien contacte votre Administrateur";
+                            content: "Impression désactivée - Document protégé";
                             display: block;
                             font-size: 20px;
                             text-align: center;
@@ -440,7 +409,6 @@
                         }
                     }
                 `;
-
             document.head.appendChild(style);
 
             // 🔒 Blocage copier
@@ -508,5 +476,7 @@
             });
         });
     </script>
+
+
 
 </div>
