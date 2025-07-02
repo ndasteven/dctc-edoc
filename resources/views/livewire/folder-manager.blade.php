@@ -185,11 +185,11 @@
                                 </small>
                             @elseif ($permission === 'E')
                                 <small style="font-size: 8px">
-                                    🟢
+                                    🟠
                                 </small>
                             @elseif ($permission === 'LE')
                                 <small style="font-size: 8px">
-                                    🔴🟢
+                                    🟢
                                 </small>
                             @else
                                 <small style="font-size: 8px">
@@ -300,11 +300,11 @@
                                     </small>
                                 @elseif ($filePermission === 'E')
                                     <small style="font-size: 8px">
-                                        🟢
+                                        🟠
                                     </small>
                                 @elseif ($filePermission === 'LE')
                                     <small style="font-size: 8px">
-                                        🔴🟢
+                                        🟢
                                     </small>
                                 @else
                                     <small style="font-size: 8px">
