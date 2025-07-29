@@ -8,10 +8,20 @@
     <div class="relative p-4 w-full max-w-4xl max-h-full">
         <!-- Modal content -->
         <div class="relative bg-blue-600 rounded-lg shadow-lg" style="padding-bottom:80px">
+    
+           
             <!-- Modal header -->
             <div class="flex items-center justify-between  border-b border-blue-400" style="padding: 20px ; ">
                 <h3 class="text-2xl font-semibold text-white">
-                    Actions sur un Dossier
+                    Menu Contextuel
+
+                     @if (session()->has('message'))
+                     <div class="" style="text-align: margin:2px auto">
+                    <div class="p-2 text-sm text-green-700 bg-green-100 rounded" style="width: 100%">
+                        {!! session('message') !!}
+                    </div>
+                    </div>
+                    @endif
                 </h3>
                 <button type="button" id="closePropriete" wire:click="eraseInfoPropriete"
                     class="text-white hover:text-gray-300 bg-transparent rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center"
@@ -101,33 +111,35 @@
                         $permission = null;
                     }
 
+                    $isSuperAdmin = \App\Helpers\AccessHelper::superAdmin(auth()->user());
+
                     // Logique des permissions pour les DOSSIERS
                     if ($docClickPropriete === 'folder') {
                         // Permission 'L' (Lecture) : Créer Dossier, Ajouter Document
-                        $canCreateFolder = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
-                        $canAddDocument = in_array($permission, ['L', 'E', 'LE']) || $permission === null;
+                        $canCreateFolder =$isSuperAdmin || in_array($permission, [ 'E', 'LE']) || $permission === null;
+                        $canAddDocument =$isSuperAdmin || in_array($permission, [ 'E', 'LE']) || $permission === null;
 
                         // Permission 'E' (Écriture) : + Renommer, Verrouiller
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
+                        $canRename =$isSuperAdmin || in_array($permission, ['E', 'LE']) || $permission === null;
+                        $canLock =$isSuperAdmin || in_array($permission, ['E', 'LE']) || $permission === null;
 
                         // Permission 'LE' (Lecture + Écriture) : + Archiver, Supprimer, Droits & Sécurité
-                        $canArchive = in_array($permission, ['LE']) || $permission === null;
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['LE']) || $permission === null;
+                        $canArchive =$isSuperAdmin || in_array($permission, ['LE']) || $permission === null;
+                        $canDelete =$isSuperAdmin || $isSuperAdmin || in_array($permission, ['LE']) || $permission === null;
+                        $canManageRights =$isSuperAdmin || in_array($permission, ['LE']) || $permission === null;
                     }
                     // Logique des permissions pour les DOCUMENTS
                     elseif ($docClickPropriete === 'file') {
                         // Permission 'L' (Lecture) : TOUT désactivé
-                        $canCreateFolder = false; // N/A pour les documents
-                        $canAddDocument = false; // N/A pour les documents
-                        $canRename = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canLock = in_array($permission, ['E', 'LE']) || $permission === null;
-                        $canArchive = in_array($permission, ['E', 'LE']) || $permission === null;
+                        $canCreateFolder =$isSuperAdmin || false; // N/A pour les documents
+                        $canAddDocument =$isSuperAdmin || false; // N/A pour les documents
+                        $canRename =$isSuperAdmin || in_array($permission, ['E', 'LE']) || $permission === null;
+                        $canLock =$isSuperAdmin ||in_array($permission, ['E', 'LE']) || $permission === null;
+                        $canArchive =$isSuperAdmin || in_array($permission, ['E', 'LE']) || $permission === null;
 
                         // Permission 'LE' (Lecture + Écriture) : TOUT activé
-                        $canDelete = in_array($permission, ['LE']) || $permission === null;
-                        $canManageRights = in_array($permission, ['L','E','LE']) || $permission === null;
+                        $canDelete = $isSuperAdmin || in_array($permission, ['LE']) || $permission === null;
+                        $canManageRights =$isSuperAdmin || in_array($permission, ['L','E','LE']) || $permission === null;
                     }
                     // Cas par défaut
                     else {
@@ -196,8 +208,15 @@
                         <button @if (isset($infoPropriete) && $infoPropriete->verrouille) disabled @endif
                             class="flex items-center space-x-2 bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg shadow-md"
                             wire:loading.attr="disabled"
-                            @if ($this->docClickPropriete == 'folder') @click='clickeditfolder' wire:click="getFolderId({{ $this->folderCreateId }})" @endif
-                            @if ($this->docClickPropriete == 'file') @click='clickeditFile' wire:click="getFileId({{ $this->folderCreateId }})" @endif>
+                            @if ($this->docClickPropriete == 'folder')
+                                wire:click="getFolderId({{ $this->folderCreateId }})"
+                                onclick="document.getElementById('closePropriete').click(); setTimeout(() => { document.getElementById('clickeditFolder').click(); }, 300);"
+                            @endif
+                            @if ($this->docClickPropriete == 'file')
+                                wire:click="getFileId({{ $this->folderCreateId }})"
+                                onclick="document.getElementById('closePropriete').click(); setTimeout(() => { document.getElementById('clickeditFile').click(); }, 300);"
+                            @endif
+                            >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"

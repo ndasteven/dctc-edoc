@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Folder extends Model
+  
 {
+    use Searchable;
     protected $fillable = ['name','parent_id','service_id','verrouille','code_verrou','user_id'];
 
     // Event boot pour créer automatiquement les permissions
@@ -66,5 +69,39 @@ class Folder extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'parent_id' => $this->parent_id,
+            'service_id' => $this->service_id,
+            'verrouille' => $this->verrouille,
+            'user_id' => $this->user_id,
+            'created_at' => $this->created_at->timestamp,
+        ];
+    }
+
+    /**
+     * Get the scout settings for the model.
+     *
+     * @return array
+     */
+    public function scoutSettings()
+    {
+        return [
+            'filterableAttributes' => [
+                'id',
+                'name',
+                'parent_id',
+                'service_id',
+                'verrouille',
+                'user_id',
+                'created_at',
+                'parent_id'
+            ],
+        ];
     }
 }

@@ -33,6 +33,14 @@ class traitementQueueUploadFile implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * Supprime le job de la file d'attente si les modèles ne sont plus présents.
+     *
+     * @var bool
+     */
+    public $deleteWhenMissingModels = true;
+
+
     const FILE_CHUNK_SIZE = 50; // 10KB
     const DB_BATCH_SIZE = 20;
     const EXCEL_ROW_CHUNK = 500;
@@ -400,4 +408,3 @@ bonne convertion pour exel ancien model
     public function batchSize(): int { return 1000; }
     public function retryUntil() { return now()->addMinutes(30); }
 }
-
