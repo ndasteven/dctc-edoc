@@ -14,10 +14,25 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class HistoryController extends Controller
 {
-    public function exportPDF()
+    public function exportPDF(Request $request)
     {
-        // Récupérer les activités
-        $activities = ActivityLog::with('user')->get();
+        $user = Auth::user();
+        $service = $user->service;
+        $searchUserId = $request->input('user_id');
+
+        $query = ActivityLog::query();
+
+        if ($searchUserId) {
+            $query->where('user_id', $searchUserId);
+        }
+
+        if (!($user->role->nom == "SuperAdministrateur" || $user->role->nom == "Administrateur")) {
+            $query->whereIn('description', $service->documents()->pluck('nom'))->where(function (Builder $query) use ($user) {
+                $query->whereIn('description', $user->confidentialite()->pluck('nom'))->orWhere('confidentiel', false);
+            });
+        }
+
+        $activities = $query->with('user')->latest()->get();
 
         // Charger la vue PDF avec les données
         $pdf = Pdf::loadView('history-pdf', compact('activities'));
@@ -26,24 +41,33 @@ class HistoryController extends Controller
         return $pdf->download('historique-des-activites.pdf');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $service = $user->service;
+        $searchUserId = $request->input('user_id');
 
+        $query = ActivityLog::query();
 
-        if ($user->role->nom == "SuperAdministrateur" | $user->role->nom == "Administrateur") {
-            $activities = ActivityLog::latest()->paginate(10);
+        if ($searchUserId) {
+            $query->where('user_id', $searchUserId);
+        }
+
+        if ($user->role->nom == "SuperAdministrateur" || $user->role->nom == "Administrateur") {
+            // Les administrateurs voient tout (potentiellement filtré par utilisateur)
         } else {
-            $activities = ActivityLog::latest()->whereIn('description', $service->documents()->pluck('nom'))->where(function (Builder $query) use ($user) {
+            $query->whereIn('description', $service->documents()->pluck('nom'))->where(function (Builder $query) use ($user) {
                 $query->whereIn('description', $user->confidentialite()->pluck('nom'))->orWhere('confidentiel', false);
-            })->paginate(10); // Les 3 dernières actions
-        };
+            });
+        }
+
+        $activities = $query->latest()->paginate(10);
+
         $users = User::all();
         $services = Service::all();
         $roles = Role::all();
         $documents = Document::all();
 
-        return view('history', compact('activities', 'users', 'services', 'roles', 'documents'));
+        return view('history', compact('activities', 'users', 'services', 'roles', 'documents', 'searchUserId'));
     }
 }

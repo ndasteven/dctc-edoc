@@ -15,51 +15,75 @@ class ModalVerrou extends Component
     public bool $accessGranted = false;
     public $modelEncours;
     public $modelencourName;
-    public function mount($id, $model){
-        if($model=="folder"){
-        $folder = folder::find($id);
-        if($folder){
-            $this->modelEncours=$folder;
-            if($folder['verrouille']==true){ //verifie si le dossier contient un verrouillage si oui on affiche le modal de demande code d'acces
-                $this->accessGranted=true;
-                $this->modelencourName=$folder['name'];
-            }else{
-                $this->accessGranted=false;
-            }  
+    public $context = 'default';
+
+    protected $listeners = ['setUnlockTarget'];
+
+    public function setUnlockTarget($id, $model, $context = 'default')
+    {
+        $this->context = $context;
+        $this->loadModel($id, $model);
+
+        if ($this->accessGranted) {
+            $this->dispatch('open-unlock-modal-js');
         }
-        }
-        if($model=="document"){
+    }
+
+    public function mount($id = null, $model = null)
+    {
+        // Le mount initial ne fait rien, on attend l'événement
+    }
+
+    public function loadModel($id, $model)
+    {
+        $this->reset(['unlockCode', 'accessGranted', 'modelEncours', 'modelencourName']);
+
+        if ($model == "folder") {
+            $folder = folder::find($id);
+            if ($folder && $folder->verrouille) {
+                $this->modelEncours = $folder;
+                $this->modelencourName = $folder->name;
+                $this->accessGranted = true;
+            }
+        } elseif ($model == "document") {
             $document = Document::find($id);
-            if($document){
-                $this->modelEncours=$document;
-                if($document['verrouille']==true){ //verifie si le dossier contient un verrouillage si oui on affiche le modal de demande code d'acces
-                    $this->accessGranted=true;
-                    $this->modelencourName=$document['nom'];
-                }else{
-                    $this->accessGranted=false;
-                }
-                
+            if ($document && $document->verrouille) {
+                $this->modelEncours = $document;
+                $this->modelencourName = $document->nom;
+                $this->accessGranted = true;
             }
         }
     }
+
+
     public function verifyCode()
     {
-        if (Hash::check($this->unlockCode, $this->modelEncours->code_verrou)) {
+        if ($this->modelEncours && Hash::check($this->unlockCode, $this->modelEncours->code_verrou)) {
             $this->accessGranted = false;
-            $this->dispatch('checkAccess') ;
+
             ActivityLog::create([
-                'action' => '✔️Dévérouillage pour lecture',
+                'action' => '✔️ Dévérouillage réussi',
                 'description' => $this->modelencourName,
-                'icon' => '✔️' ,
+                'icon' => '✔️',
                 'user_id' => Auth::id(),
                 'confidentiel' => false,
-            ]);        
+            ]);
+
+            if ($this->context === 'move') {
+                $this->dispatch('unlockSuccess');
+            } else {
+                $this->dispatch('checkAccess');
+            }
+
+            $this->dispatch('close-unlock-modal-js');
+            $this->reset('unlockCode');
+
         } else {
             $this->addError('unlockCode', 'Code incorrect.');
             ActivityLog::create([
-                'action' => '❌Echec dévérouillage pour lecture',
+                'action' => '❌ Echec dévérouillage',
                 'description' => $this->modelencourName,
-                'icon' => '❌' ,
+                'icon' => '❌',
                 'user_id' => Auth::id(),
                 'confidentiel' => false,
             ]);

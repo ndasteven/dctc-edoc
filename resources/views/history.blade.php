@@ -5,12 +5,33 @@
             <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
                 {{ __('Historique des activités') }}
             </h2>
-            <a href="{{ route('history.export') }}"
+            <a href="{{ route('history.export', ['user_id' => request('user_id')]) }}"
                 class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition">
                 Exporter
             </a>
         </div>
     </x-slot>
+
+    <!-- Search Form -->
+    <div class="mb-6 mt-6 bg-white max-w-2xl mx-auto p-4 rounded-lg shadow-md">
+        <form action="{{ route('history') }}" method="GET" id="history-filter-form">
+            <div class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <label for="user_id" class="block text-sm font-medium text-gray-700">Filtrer par utilisateur</label>
+                    <select name="user_id" id="user_id" class="mt-1 block w-full">
+                        @if(isset($searchUserId) && $searchUserId)
+                            @php
+                                $selectedUser = \App\Models\User::find($searchUserId);
+                            @endphp
+                            @if($selectedUser)
+                                <option value="{{ $selectedUser->id }}" selected>{{ $selectedUser->name }}</option>
+                            @endif
+                        @endif
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
 
     <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
         <ul class="divide-y divide-gray-200">
@@ -52,7 +73,7 @@
 
     <!-- Pagination -->
     <div class="mt-4 py-4 px-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
-        {{ $activities->links() }}
+        {{ $activities->appends(request()->query())->links() }}
     </div>
 
     <!-- Footer -->
@@ -63,4 +84,43 @@
                 class="text-gray-400 hover:underline hover:text-gray-200">info@dctc-ci.com</a> </p>
     </footer>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@endpush
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#user_id').select2({
+            placeholder: 'Tous les utilisateurs',
+            allowClear: true,
+            ajax: {
+                url: '{{ route("users.searchForSelect2") }}',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        term: params.term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
+            }
+        });
+
+        $('#user_id').on('change', function() {
+            $('#history-filter-form').submit();
+        });
+    });
+</script>
+@endpush
+
 </x-app-layout>
+
+

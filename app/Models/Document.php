@@ -49,10 +49,17 @@ class Document extends Model
     // Définissez les attributs qui seront indexés
     public function toSearchableArray()
     {
+        $this->load('services');
+
         return [
             'id' => $this->id,
             'nom' => $this->nom,
             'content' => $this->content,
+            'type' => $this->type,
+            'confidentiel' => $this->confidentiel,
+            'folder_id' => $this->folder_id,
+            'services' => $this->services->map->only(['id', 'nom'])->toArray(),
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
@@ -79,6 +86,25 @@ class Document extends Model
     public function folder()
     {
         return $this->belongsTo(Folder::class);
+    }
+
+    /**
+     * Get the scout settings for the model.
+     *
+     * @return array
+     */
+    public function scoutSettings()
+    {
+        return [
+            'filterableAttributes' => [
+                'id',
+                'type',
+                'confidentiel',
+                'services.id',
+                'created_at',
+                'folder_id'
+            ],
+        ];
     }
 }
 
