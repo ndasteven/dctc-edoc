@@ -107,14 +107,15 @@
 
     @if ($query)
         <div id="result"
-            class=" overflow-y-scroll h-60 max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+            class=" overflow-y-hidden h-60 max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
 
-            @if ((Auth::user()->role->nom === 'SuperAdministrateur') | (Auth::user()->role->nom === 'Administrateur'))
+            @if ((Auth::user()->role->nom === 'SuperAdministrateur') )
                 <h2 class="text-xl font-bold mb-4 text-gray-700 space-x-2">Resultats de la recherche :
                     {{ count($documents) + count($folders) }}
                 </h2>
                 <ul class="divide-y divide-gray-200">
                     @forelse ($folders as $item)
+    
                         <a href="{{ route('folders.show', $item->id) }}">
                             <button
                                 class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex space-x-2">
@@ -160,7 +161,10 @@
                 </h2>
                 <ul class="divide-y divide-gray-200">
                      @forelse ($folders as $item)
-                        <a href="{{ route('folders.show', $item->id) }}">
+                        @php
+                            $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(), $item->id);   
+                        @endphp
+                        <a href="{{ route('folders.show', $item->id) }}" class="@if ($restriction) hidden @endif">
                             <button
                                 class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex space-x-2">
                                 📁- {{ $item->name }}
@@ -169,9 +173,12 @@
                     @empty
                     @endforelse
                     @forelse ($documents as $item)
-                        <a href="{{ route('pdf.view', $item->id) }}">
-                            <button
-                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2">
+                    @php
+                        $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $item->id);
+                    @endphp
+                        <a href="{{ route('pdf.view', $item->id) }}" class="@if ($restriction) hidden @endif">
+                            <div
+                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2 overflow-hidden overflow-x-scroll">
                                 <div class="flex items-center">
                                     @if ($item->type == 'pdf')
                                         <span>
@@ -191,7 +198,7 @@
                                         ...{!! $formattedDocuments[$item->id]['content'] !!}...
                                     </p>
                                 @endif
-                            </button>
+                            </div>
                         </a>
                     @empty
                         @if(count($folders) == 0)
