@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\ActivityLog;
 use App\Models\Document;
 use App\Models\Folder;
 use App\Models\User;
@@ -16,6 +17,8 @@ class UserPermission extends Component
     public $query;
     public array $permissions = [];
     public $infoPropriete;
+    public $element;
+    public $folderordoc;
 
     // public function mount($infoPropriete)
     // {
@@ -54,6 +57,7 @@ class UserPermission extends Component
 
         if ($perm) {
             $this->permissions[$user->id] = $perm->permission;
+            $this->element= $perm;
         }
     }
 }
@@ -93,8 +97,10 @@ class UserPermission extends Component
             ->where(function ($q) {
                 if ($this->infoPropriete instanceof Folder) {
                     $q->where('folder_id', $this->infoPropriete->id);
+                    $this->folderordoc = $this->element['folder'];
                 } elseif ($this->infoPropriete instanceof Document) {
                     $q->where('document_id', $this->infoPropriete->id);
+                    $this->folderordoc = $this->element['document'];
                 }
             })
             ->first();
@@ -125,6 +131,7 @@ class UserPermission extends Component
     private function updatePermissionForEntity($existingPermission, $newPermission)
     {
         $existingPermission->update(['permission' => $newPermission]);
+       
     }
 
     /**
@@ -145,12 +152,28 @@ class UserPermission extends Component
         if ($this->infoPropriete instanceof Folder) {
             $data['folder'] = $this->infoPropriete->name;
             $data['folder_id'] = $this->infoPropriete->id;
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $this->infoPropriete->name,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         } elseif ($this->infoPropriete instanceof Document) {
             $data['document'] = $this->infoPropriete->nom;
             $data['document_id'] = $this->infoPropriete->id;
+             ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $this->infoPropriete->nom,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         }
 
         ModelsUserPermission::create($data);
+
+        
     }
 
     /**
@@ -164,13 +187,26 @@ class UserPermission extends Component
         foreach ($folder->files as $document) {
             $this->createOrUpdatePermissionForDocument($user, $document, $permission);
             $affectedCount++;
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $document->nom,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         }
 
         // Propager aux sous-dossiers (récursif)
         foreach ($folder->children as $childFolder) {
             $this->createOrUpdatePermissionForFolder($user, $childFolder, $permission);
             $affectedCount++;
-
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $childFolder->name,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
             // Récursion pour les enfants du sous-dossier
             $affectedCount += $this->propagatePermissionToChildren($user, $childFolder, $permission);
         }
@@ -197,8 +233,22 @@ class UserPermission extends Component
 
         if ($existingPermission) {
             $existingPermission->update(['permission' => $permission]);
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $document->nom,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         } else {
             ModelsUserPermission::create($data);
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $document->nom,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         }
     }
 
@@ -221,8 +271,22 @@ class UserPermission extends Component
 
         if ($existingPermission) {
             $existingPermission->update(['permission' => $permission]);
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' => $folder->name,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         } else {
             ModelsUserPermission::create($data);
+            ActivityLog::create([
+                'action' => ' permission appliqué ',
+                'description' =>$folder->name,
+                'icon' => '...', 
+                'user_id' => Auth::id(),
+                'confidentiel' => false,
+            ]);
         }
     }
     public function render()

@@ -454,7 +454,9 @@
             {{-- le modal pour permission ici --}}
             @if ($infoPropriete && $docClickPropriete)
                 @livewire('user-permission', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
+                @livewire('restriction-users', ['infoPropriete' => $infoPropriete, 'docClickPropriete' => $docClickPropriete])
             @endif
+            
             <style>
                 .modal-open {
                     overflow: hidden;
@@ -565,30 +567,8 @@
                 </div>
             </div>
 
-            <!-- Modal : Restreindre les utilisateurs -->
-            <div id="restrictUserModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-                <!-- Overlay -->
-                <div class="absolute inset-0 bg-black opacity-50" onclick="closeRestrictUserModal()"></div>
+            
 
-                <!-- Contenu du modal -->
-                <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">Restreindre les utilisateurs</h2>
-                        <button onclick="closeRestrictUserModal()" class="text-gray-500 text-2xl">&times;</button>
-                    </div>
-
-                    <!-- Contenu -->
-                    <p class="text-gray-700">Fonctionnalité en développement…</p>
-
-                    <!-- Bouton fermer -->
-                    <div class="mt-6 text-right">
-                        <button onclick="closeRestrictUserModal()"
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Fermer
-                        </button>
-                    </div>
-                </div>
-            </div>
             <!-- Tous les modaux -->
             <div id="archiveModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
                 <div class="absolute inset-0 bg-black opacity-50" onclick="closeArchiveModal()"></div>
@@ -723,6 +703,14 @@
 
     function closePermission() {
         document.getElementById('permissionModal').classList.add("hidden")
+    }
+
+    function openRestriction() {
+        document.getElementById('restrictUserModal').classList.remove("hidden")
+    }
+
+    function closeRestriction() {
+        document.getElementById('restrictUserModal').classList.add("hidden")
     }
 
     document.addEventListener('errorVerrou', () => {

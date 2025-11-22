@@ -4,6 +4,7 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserPermission;
 use App\Models\User;
+use DragonCode\Support\Helpers\Boolean;
 
 class AccessHelper
 {
@@ -37,5 +38,19 @@ class AccessHelper
         }
 
         return $query->value('permission'); // 'L', 'E', 'LE' ou null
+    }
+
+    public static function getRectriction($userId, $folderId = null, $documentId = null){
+        $query = \App\Models\UserPermission::where('user_id', $userId);
+        
+        if ($folderId !== null) {
+            $query->where('folder_id', $folderId);
+        }
+
+        if ($documentId !== null) {
+            $query->where('document_id', $documentId);
+        }
+        
+        return $query->value('restrictions'); // 0;1
     }
 }

@@ -19,7 +19,7 @@
 
         <!-- Styles -->
         @livewireStyles
-
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <x-banner />
@@ -45,5 +45,6 @@
         @stack('modals')
         <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         @livewireScripts
+        @stack('scripts')
     </body>
 </html>

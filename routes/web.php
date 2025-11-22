@@ -85,6 +85,8 @@ Route::middleware([
 })->group(function () {
     Route::get('/export-historque-pdf', [HistoryController::class, 'exportPDF'])->middleware('checklicence')->name('history.export');
 })->group(function(){
+    Route::get('/api/users/search', [UserController::class, 'searchForSelect2'])->name('users.searchForSelect2');
+})->group(function(){
     Route::get('/editer/{id}', [DocumentEditor::class, 'index'])->name('documents.edit');
 })->group(function(){
     Route::get('/test', function () {

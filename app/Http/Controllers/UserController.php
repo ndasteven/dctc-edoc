@@ -175,4 +175,13 @@ class UserController extends Controller
 
         return view('users', compact('users', 'users_tag', 'services', 'documents', 'roles'));
     }
+
+    public function searchForSelect2(Request $request)
+    {
+        $term = $request->input('term');
+        $users = User::where('name', 'LIKE', '%' . $term . '%')
+            ->select('id', 'name as text')
+            ->get();
+        return response()->json($users);
+    }
 }

@@ -17,11 +17,13 @@ class UserPermission extends Model
         'document',     // nom lisible du document
         'document_id',  // clé étrangère vers documents
         'permission',   // L, E ou LE
+        'restrictions'  // 1;0  1 pour restreint et 0 pour pas restreint
     ];
 
     protected $casts = [
         'folder_id' => 'integer',
         'document_id' => 'integer',
+        'restrictions'=>'boolean',
     ];
 
     /**
