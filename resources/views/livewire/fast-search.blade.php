@@ -106,8 +106,8 @@
     </div>
 
     @if ($query)
-        <div id="result"
-            class=" overflow-y-hidden h-60 max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+        <div id="result" style="background-color: rgb(214, 214, 214)"
+            class=" overflow-y-auto h-60 max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
 
             @if ((Auth::user()->role->nom === 'SuperAdministrateur') )
                 <h2 class="text-xl font-bold mb-4 text-gray-700 space-x-2">Resultats de la recherche :
