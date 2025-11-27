@@ -1,4 +1,5 @@
 <div class="mx-auto">
+    
     <!-- Drag Bubble -->
     <div id="drag-bubble"
         class="hidden absolute z-50 pointer-events-none bg-white bg-opacity-75 text-blue-600 border-2 border-dashed border-blue-600 rounded-md px-3 py-1 font-bold text-sm">
