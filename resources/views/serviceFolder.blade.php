@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header" style="margin-bottom: 0px">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __( $serviceName->nom) }}
+            {{ $serviceName ? __($serviceName->nom) : __('Dépôts') }}
         </h2>
         @livewire('fast-search')
     </x-slot>

@@ -71,7 +71,7 @@
         <main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
             <!-- Liste de dossiers -->
             <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
-                @if (count($documentGene) > 0)
+                {{-- @if (count($documentGene) > 0)
                     <div>
                         <button
                             class="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow hover:shadow-md transition">
@@ -81,7 +81,7 @@
                             </a>
                         </button>
                     </div>
-                @endif
+                @endif --}}
                 @if ((Auth::user()->role->nom == 'SuperAdministrateur') | (Auth::user()->role->nom == 'Administrateur'))
                     @foreach ($servicePaginate as $service)
                         <div>
@@ -220,7 +220,7 @@
                                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                     <th scope="row"
                                                         class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white inline-flex space-x-2">
-                                                        {{ $document->nom }}.{{ $document->type }} hello 
+                                                        {{ $document->nom }}.{{ $document->type }} 
                                                     </th>
                                                     <td class="px-6 py-4">
                                                         @if ($document->type == 'pdf')

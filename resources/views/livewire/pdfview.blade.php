@@ -7,7 +7,41 @@
 
             <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg flex-shrink-0">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
-
+                <!-- Affichage du chemin d'accès au fichier -->
+            @if (!empty($breadcrumbPath))
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <small class="breadcrumb inline-flex items-center">
+                        <span class="inline-flex items-center text-gray-600 dark:text-white">Chemin :
+                            
+                            @foreach ($breadcrumbPath as $index => $item)
+                                @if ($index > 0)
+                                    <svg class="w-5 h-5 text-gray-500 dark:text-white mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4" />
+                                    </svg>
+                                @endif
+                                @if (isset($item['id']) && str_starts_with($item['id'], 'service-'))
+                                    <span class="text-blue-600 dark:text-blue-400">
+                                        {{ $item['name'] }}
+                                    </span>
+                                @else
+                                    <a href="{{ route('folders.show', $item['id']) }}"
+                                        class="text-blue-600 hover:underline dark:text-blue-400">
+                                        {{ $item['name'] }}
+                                    </a>
+                                @endif
+                            @endforeach
+                            <!-- Flèche de séparation avant le nom du fichier -->
+                            <svg class="w-5 h-5 text-gray-500 dark:text-white mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4" />
+                            </svg>
+                            <!-- Nom du fichier courant -->
+                            <span class="text-gray-800 font-medium dark:text-white">
+                                {{ $document->nom ?? $document->filename }}
+                            </span>
+                        </span>
+                    </small>
+                </div>
+            @endif
                 <div class="flex items-center space-x-4">
                     <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
                         <div class="inline-flex space-x-2 items-center">
@@ -26,6 +60,8 @@
                     </button>
                 </div>
             </header>
+
+            
 
             <!-- Contenu principal -->
             <div class="grid grid-cols-1 md:grid-cols-4 flex-1 overflow-hidden">

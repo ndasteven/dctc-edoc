@@ -51,6 +51,7 @@ class FolderManager extends Component
 
     public $sortBy = 'name'; // Default sort by name
     public $sortDirection = 'asc'; // Default sort direction ascending
+    public $breadcrumbPath = [];
 
     public function prepareMoveToLockedFolder($sourceType, $sourceId, $targetId)
     {
@@ -58,7 +59,8 @@ class FolderManager extends Component
         $this->pendingMoveSourceType = $sourceType;
         $this->pendingMoveSourceId = $sourceId;
         $this->pendingMoveTargetId = $targetId;
-
+        session()->flash('message', 'Impossible de déplacer un dossier qui est verrouillé.');
+        $this->dispatch("show-message");
         // Le modal est maintenant ouvert instantanément par le front-end.
         // Cette méthode ne fait que préparer les données pour `executePendingMove`.
     }
@@ -167,6 +169,64 @@ class FolderManager extends Component
         $this->currentFolder = [];
         session()->forget('currentFolder');
         return redirect()->to('/documentsFolder/' . $this->SessionService);
+    }
+
+    public function getBreadcrumbPath()
+    {
+        if (!$this->parentId) {
+            return [];
+        }
+
+        $path = [];
+        $currentFolder = Folder::with('parent')->find($this->parentId); // Charger uniquement la relation parent
+
+        if ($currentFolder) {
+            // Construire le chemin en remontant l'arborescence
+            $path[] = [
+                'id' => $currentFolder->id,
+                'name' => $currentFolder->name,
+                'parent_id' => $currentFolder->parent_id
+            ];
+
+            $parent = $currentFolder->parent;
+            while ($parent) {
+                array_unshift($path, [
+                    'id' => $parent->id,
+                    'name' => $parent->name,
+                    'parent_id' => $parent->parent_id
+                ]);
+                $parent = $parent->parent;
+            }
+
+            // Trouver le service en utilisant le dossier racine (premier élément du chemin)
+            if (!empty($path)) {
+                $rootFolder = $path[0]; // Le premier élément est le dossier racine
+                $rootFolderModel = Folder::with('service_folders')->find($rootFolder['id']);
+
+                if ($rootFolderModel && $rootFolderModel->service_folders) {
+                    $serviceItem = [
+                        'id' => 'service-' . $rootFolderModel->service_folders->id, // Utiliser un préfixe pour identifier le service
+                        'name' => $rootFolderModel->service_folders->nom,
+                        'parent_id' => null
+                    ];
+
+                    // S'assurer que le service n'est pas déjà dans le chemin
+                    $serviceAlreadyExists = false;
+                    foreach ($path as $pathItem) {
+                        if ($pathItem['name'] === $rootFolderModel->service_folders->nom) {
+                            $serviceAlreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!$serviceAlreadyExists) {
+                        array_unshift($path, $serviceItem);
+                    }
+                }
+            }
+        }
+
+        return $path;
     }
 
     public function createFolder()
@@ -413,7 +473,7 @@ class FolderManager extends Component
             ActivityLog::create([
                 'action' => ' Début du traitement du document',
                 'description' => $document->nom,
-                'icon' => '...', 
+                'icon' => '...',
                 'user_id' => Auth::id(),
                 'confidentiel' => $this->confidence,
             ]);
@@ -700,7 +760,7 @@ class FolderManager extends Component
         // Supprimer le dossier lui-même
         $this->deleteFolderDirect($folder);
     }
-    
+
     protected function deleteFolderDirect(Folder $folder)
     {
         $folderName = $folder->name;
@@ -717,7 +777,7 @@ class FolderManager extends Component
 
     protected function deleteFileDirect(Document $file)
     {
-        $path = Storage::disk('public')->path($file->filename);           
+        $path = Storage::disk('public')->path($file->filename);
         // Supprimer physiquement le fichier s’il existe
         if ($file->filename && file_exists($path)) {
             @unlink($path);
@@ -777,8 +837,11 @@ class FolderManager extends Component
         if (isset($this->services)) {
             // Cas avec service spécifique
             $foldersQuery = Folder::where('service_id', $this->services->id)->whereNull('parent_id');
+        } elseif ($this->parentId === null || $this->parentId === 0) {
+            // Cas spécial pour les dépôts - récupérer tous les dossiers racines (ceux sans parent)
+            $foldersQuery = Folder::whereNull('parent_id');
         } else {
-            // Cas avec parentId
+            // Cas avec parentId (sous-dossiers)
             $foldersQuery = Folder::where('parent_id', $this->parentId);
         }
 
@@ -832,7 +895,10 @@ class FolderManager extends Component
 
         $infoProprietes = ''; // à compléter si tu as d'autres infos à afficher
 
-        return view('livewire.folder-manager', compact('folders', 'fichiers', 'SessionServiceinfo', 'infoProprietes'));
+        // Construire le chemin de navigation (breadcrumb)
+        $this->breadcrumbPath = $this->getBreadcrumbPath();
+
+        return view('livewire.folder-manager', compact('folders', 'fichiers', 'SessionServiceinfo', 'infoProprietes') + ['breadcrumbPath' => $this->breadcrumbPath]);
     }
 
     public function loadMore()
@@ -843,6 +909,7 @@ class FolderManager extends Component
 
     public function moveSelectedItems($items, $targetFolderId, $isUnlocked = false)
     {
+
         $targetFolder = Folder::find($targetFolderId);
         if (!$targetFolder) {
             session()->flash('message', 'Erreur: Dossier cible introuvable.');
@@ -851,6 +918,7 @@ class FolderManager extends Component
 
         // Si la cible est verrouillée et n'a pas été déverrouillée
         if ($targetFolder->verrouille && !$isUnlocked) {
+
             // On prépare un déplacement en attente pour plusieurs éléments
             $this->prepareMoveToLockedFolder('collection', $items, $targetFolderId);
             return;
@@ -878,15 +946,17 @@ class FolderManager extends Component
     {
         $file = Document::find($fileId);
         $targetFolder = Folder::find($targetFolderId);
-
+        $userId = Auth::id();
         if (!$file || !$targetFolder) {
             session()->flash('message', 'Erreur: Fichier ou dossier introuvable.');
+            $this->dispatch("show-message");
             return;
         }
 
         // Si le dossier cible est verrouillé et n'a pas été déverrouillé pour cette action
         if ($targetFolder->verrouille && !$isUnlocked) {
             $this->prepareMoveToLockedFolder('file', $fileId, $targetFolderId);
+
             return;
         }
 
@@ -894,21 +964,24 @@ class FolderManager extends Component
         if ($file->verrouille) {
             session()->flash('message', 'Impossible de déplacer un fichier qui est verrouillé.');
             $this->dispatch('resetJS');
+            $this->dispatch("show-message");
             return;
         }
 
         // --- Vérification des permissions ---
-        $userId = auth()->id();
+
         $filePermission = \App\Helpers\AccessHelper::getPermissionFor($userId, null, $file->id);
         if (!in_array($filePermission, ['E', 'LE'])) {
             session()->flash('message', 'Permission refusée pour déplacer ce fichier.');
             $this->dispatch('resetJS');
+            $this->dispatch("show-message");
             return;
         }
         $folderPermission = \App\Helpers\AccessHelper::getPermissionFor($userId, $targetFolder->id);
         if (!in_array($folderPermission, ['E', 'LE'])) {
             session()->flash('message', 'Permission refusée pour ajouter un fichier dans ce dossier.');
             $this->dispatch('resetJS');
+            $this->dispatch("show-message");
             return;
         }
         // --- Fin des vérifications ---
@@ -934,18 +1007,22 @@ class FolderManager extends Component
 
     public function moveFolder($sourceFolderId, $targetFolderId, $isUnlocked = false)
     {
+
         // 1. Valider que les dossiers existent
         $sourceFolder = Folder::find($sourceFolderId);
         $targetFolder = Folder::find($targetFolderId);
 
         if (!$sourceFolder || !$targetFolder) {
             session()->flash('message', 'Erreur: Dossier source ou cible introuvable.');
+            $this->dispatch("show-message");
             return;
         }
-        
+
         // Si le dossier cible est verrouillé et n'a pas été déverrouillé pour cette action
+
         if ($targetFolder->verrouille && !$isUnlocked) {
             $this->prepareMoveToLockedFolder('folder', $sourceFolderId, $targetFolderId);
+
             return;
         }
 
@@ -953,6 +1030,7 @@ class FolderManager extends Component
         if ($sourceFolder->verrouille) {
             session()->flash('message', 'Impossible de déplacer un dossier qui est verrouillé.');
             $this->dispatch('resetJS');
+            $this->dispatch("show-message");
             return;
         }
 
@@ -967,6 +1045,7 @@ class FolderManager extends Component
         while ($parent) {
             if ($parent->id == $sourceFolderId) {
                 session()->flash('message', 'Un dossier ne peut pas être déplacé dans un de ses propres sous-dossiers.');
+                $this->dispatch("show-message");
                 return;
             }
             $parent = $parent->parent; // Remonte dans l'arborescence
@@ -980,6 +1059,7 @@ class FolderManager extends Component
         if (!in_array($sourcePermission, ['E', 'LE']) || !in_array($targetPermission, ['E', 'LE'])) {
             session()->flash('message', 'Permission refusée pour effectuer ce déplacement.');
             $this->dispatch('resetJS');
+            $this->dispatch("show-message");
             return;
         }
 
@@ -998,5 +1078,6 @@ class FolderManager extends Component
 
         session()->flash('message', 'Dossier déplacé avec succès.');
         $this->dispatch('resetJS');
+        $this->dispatch("show-message");
     }
 }

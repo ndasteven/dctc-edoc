@@ -136,7 +136,7 @@
 
                 <button id="delete-selected"
                     class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
-                    <span>Supprimer la sélection</span> <span wire:loading ">
+                    <span>Supprimer la sélection</span> <span wire:loading >
                                     <span role="status">
                                         <svg aria-hidden="true"
                                             class="w-4 h-5 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
@@ -162,9 +162,10 @@
                 @foreach ($folders as $index => $folder)
                     @php
                         $permission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), $folder->id);
+                        $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(), $folder->id);
                     @endphp
                     <div wire:key="folder-{{ $folder->id }}"
-                        class="p-2 border-0 rounded iconButton  grid relative click-right w-40 h-32 rounded shadow-md overflow-hidden bg-cover bg-center group hover:scale-105 transition drop-zone draggable-folder"
+                        class="p-2 border-0 rounded iconButton  grid relative click-right w-40 h-32 rounded shadow-md overflow-hidden bg-cover bg-center group hover:scale-105 transition drop-zone draggable-folder @if($restriction) hidden @endif"
                         style="background-image: url({{ asset('img/folder.png') }});"
                         data-dropdown-id="dropdownRight-{{ $folder->id }}" data-dropdown-placement="right"
                         data-folder-id="{{ $folder->id }}"
@@ -317,9 +318,10 @@
                     @php
                         $type = strtolower($file->type);
                         $filePermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), null, $file->id);
+                        $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $file->id);                  
                     @endphp
 
-                    <div wire:key="file-{{ $file->id }}" class="p-2 border-0 rounded bg-white grid w-40 h-32 overflow-hidden click-droit-file bg-cover bg-center group hover:scale-105 transition draggable-file"
+                    <div wire:key="file-{{ $file->id }}" class="p-2 border-0 rounded bg-white grid w-40 h-32 overflow-hidden click-droit-file bg-cover bg-center group hover:scale-105 transition draggable-file @if($restriction) hidden @endif"
                         data-dropdown-id="dropdownRight-{{ $file->id }}"
                         data-file-id="{{ $file->id }}" draggable="true"
                         @if ($file->verrouille) title="Ce fichier est verrouillé et ne peut pas être déplacé." @endif
@@ -513,6 +515,7 @@
                 @endif
             </div>
             @else
+
             {{-- LIST VIEW --}}
             <div class="bg-white relative overflow-y-auto" style="max-height: 60vh;">
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -557,8 +560,9 @@
                         @foreach ($folders as $folder)
                             @php
                                 $permission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), $folder->id);
+                                $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(), $folder->id);
                             @endphp
-                            <tr wire:key="list-folder-{{ $folder->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 drop-zone draggable-folder"
+                            <tr wire:key="list-folder-{{ $folder->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 drop-zone draggable-folder  @if($restriction) hidden @endif "
                                 data-folder-id="{{ $folder->id }}"
                                 data-locked="{{ $folder->verrouille ? 'true' : 'false' }}"
                                 draggable="{{ $folder->verrouille ? 'false' : 'true' }}"
@@ -631,8 +635,10 @@
                             @php
                                 $type = strtolower($file->type);
                                 $filePermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), null, $file->id);
+                                $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $file->id);
+                            
                             @endphp
-                             <tr wire:key="list-file-{{ $file->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 draggable-file" data-file-id="{{ $file->id }}" draggable="true" @if ($file->verrouille) title="Ce fichier est verrouillé et ne peut pas être déplacé." @endif>
+                             <tr wire:key="list-file-{{ $file->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 draggable-file @if($restriction) hidden @endif" data-file-id="{{ $file->id }}" draggable="true" @if ($file->verrouille) title="Ce fichier est verrouillé et ne peut pas être déplacé." @endif>
                                 <td class="w-4 p-4">
                                      @if (!$file->verrouille && $filePermission !== 'L')
                                         <input type="checkbox" class="checkbox-item" wire:model.live="selectedItems" value="{{ $file->id }}" data-type="file">
@@ -1092,7 +1098,7 @@
             const isLocked = el.querySelector('svg.text-gray-800') !== null;
             const permissionNode = el.querySelector('small');
             const hasNoPermission = permissionNode && (permissionNode.textContent.includes('🔴') || permissionNode.textContent.includes('🚫'));
-
+            
             if (isLocked || hasNoPermission) {
                 el.setAttribute('draggable', 'false');
                 el.style.cursor = 'not-allowed';
@@ -1182,6 +1188,7 @@
                 el.classList.remove('bg-blue-100', 'border-2', 'border-dashed', 'border-blue-400');
 
                 const itemsJson = e.dataTransfer.getData('items');
+                
                 const targetFolderId = el.dataset.folderId;
                 const isTargetLocked = el.dataset.locked === 'true';
 
@@ -1231,19 +1238,23 @@
                     }
                 } else {
                     // --- Moving a single item ---
-                    const type = e.dataTransfer.getData('type');
+                    const type = e.dataTransfer.getData('type');                    
                     const id = e.dataTransfer.getData('id');
+                
                     if (!id || !type) return;
 
                     const sourceElement = document.querySelector(`[data-${type}-id='${id}']`);
                     showSpinner(sourceElement);
 
                     if (isTargetLocked) {
+                        // alert("ici")
                         @this.call('prepareMoveToLockedFolder', type, id, targetFolderId);
                     } else {
-                        if (type === 'file') {
+                        if (type === 'file') {  
+                           
                             @this.call('moveFile', id, targetFolderId);
                         } else if (type === 'folder') {
+                            
                             @this.call('moveFolder', id, targetFolderId);
                         }
                     }

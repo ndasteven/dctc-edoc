@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\UserPermission;
+use App\Models\Folder;
 
 class PdfView extends Component
 {
@@ -16,6 +17,8 @@ class PdfView extends Component
     public $showOpenButton = false;
     public $showEditButton = false;
 
+    public $breadcrumbPath = [];
+
     public function mount($document)
     {
         $this->nom = pathinfo($document->filename, PATHINFO_FILENAME) . '.pdf';
@@ -26,11 +29,72 @@ class PdfView extends Component
         $this->hasAccess = in_array($this->permission, ['L', 'E', 'LE']);
 
         $this->setButtonVisibility();
+
+        // Construire le chemin d'accès pour le fichier
+        $this->breadcrumbPath = $this->getFilePath($document->folder_id);
+    }
+
+    private function getFilePath($folderId)
+    {
+        if (!$folderId) {
+            return [];
+        }
+
+        $path = [];
+        $currentFolder = \App\Models\Folder::with('parent')->find($folderId);
+
+        if ($currentFolder) {
+            // Construire le chemin en remontant l'arborescence
+            $path[] = [
+                'id' => $currentFolder->id,
+                'name' => $currentFolder->name,
+                'parent_id' => $currentFolder->parent_id
+            ];
+
+            $parent = $currentFolder->parent;
+            while ($parent) {
+                array_unshift($path, [
+                    'id' => $parent->id,
+                    'name' => $parent->name,
+                    'parent_id' => $parent->parent_id
+                ]);
+                $parent = $parent->parent;
+            }
+
+            // Trouver le service en utilisant le dossier racine (premier élément du chemin)
+            if (!empty($path)) {
+                $rootFolder = $path[0]; // Le premier élément est le dossier racine
+                $rootFolderModel = \App\Models\Folder::with('service_folders')->find($rootFolder['id']);
+
+                if ($rootFolderModel && $rootFolderModel->service_folders) {
+                    $serviceItem = [
+                        'id' => 'service-' . $rootFolderModel->service_folders->id, // Utiliser un préfixe pour identifier le service
+                        'name' => $rootFolderModel->service_folders->nom,
+                        'parent_id' => null
+                    ];
+
+                    // S'assurer que le service n'est pas déjà dans le chemin
+                    $serviceAlreadyExists = false;
+                    foreach ($path as $pathItem) {
+                        if ($pathItem['name'] === $rootFolderModel->service_folders->nom) {
+                            $serviceAlreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!$serviceAlreadyExists) {
+                        array_unshift($path, $serviceItem);
+                    }
+                }
+            }
+        }
+
+        return $path;
     }
 
     private function getPermissionFor($userId, $folderId = null, $documentId = null): ?string
     {
-        // 1. Vérifie s’il y a une permission directe sur le document
+        // 1. Vérifie s'il y a une permission directe sur le document
         $permission = UserPermission::where('user_id', $userId)->where('document_id', $documentId)->value('permission');
 
         if ($permission) {
@@ -115,6 +179,7 @@ class PdfView extends Component
             'isPDF' => $isPDF,
             'isImageOrText' => $isImageOrText,
             'isOfficeDocument' => $isOfficeDocument,
+            'breadcrumbPath' => $this->breadcrumbPath,
         ]);
     }
 }

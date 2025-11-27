@@ -33,7 +33,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8 relative">
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold mb-4">
-                @if (strlen($SessionServiceinfo) > 0)
+                @if (count($breadcrumbPath) > 0)
                     <small class="breadcrumb inline-flex items-center">
                         <span class="text-gray-600" id="chemin">Chemin :
                             <a href="#" wire:click="resetFolderPath" class="text-blue-600 inline-flex items-center">
@@ -42,21 +42,19 @@
                                     <path
                                         d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
                                 </svg>
-                                {{ $SessionServiceinfo->nom }}
+                                {{ $breadcrumbPath[0]['name'] }}
                             </a>
                         </span>
-
-                        @foreach ($currentFolder as $index => $folder)
+                        @foreach ($breadcrumbPath as $index => $folder)
+                            @if ($index === 0) @continue @endif
                             <span class="inline-flex items-center">
-                                @if ($index > 0)
-                                    <svg class="w-6 h-6 text-gray-500 dark:text-white" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                        viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m10 16 4-4-4-4" />
-                                    </svg>
-                                @endif
-                                <a href="#" wire:click.prevent="navigateToFolder({{ $folder['id'] ?? 'null' }})"
+                                <svg class="w-6 h-6 text-gray-500 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m10 16 4-4-4-4" />
+                                </svg>
+                                <a href="#" wire:click.prevent="navigateToFolder({{ $folder['id'] }})"
                                     class="text-blue-600 hover:underline">
                                     {{ $folder['name'] }}
                                 </a>
@@ -64,6 +62,7 @@
                         @endforeach
                     </small>
                 @endif
+                
 
                 <span wire:loading wire:target='navigateToFolder, resetFolderPath'>
                     <span role="status">
@@ -96,7 +95,8 @@
                 </button>
             </div>
         </div>
-        @if (count($currentFolder) > 1)
+        {{-- permet d'afficher le bouton pour uploader un fichier dans le cas ou nous trouvons dans un dossier --}}
+        @if (count($breadcrumbPath) >= 1)
             <div class="flex justify-end p-3">
                 <button data-modal-target="uploadFile" data-modal-toggle="uploadFile" type="button"
                     wire:click="infoIdFocus"
@@ -118,9 +118,10 @@
 
 
         @if (session()->has('message'))
-            <div class="p-2 text-sm text-green-700 bg-green-100 rounded">
+            <div id="messageText" class="p-2 text-sm text-green-700 bg-green-100 rounded">
                 {!! session('message') !!}
             </div>
+
         @endif
 
         @if (count($folders) > 0 or count($fichiers) > 0)
@@ -155,7 +156,7 @@
                     </span>
                 </button>
             </div>
-            
+
             @if ($displayMode === 'grid')
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white relative overflow-y-auto"
                 style="max-height: 60vh;">
@@ -318,7 +319,7 @@
                     @php
                         $type = strtolower($file->type);
                         $filePermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), null, $file->id);
-                        $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $file->id);                  
+                        $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $file->id);
                     @endphp
 
                     <div wire:key="file-{{ $file->id }}" class="p-2 border-0 rounded bg-white grid w-40 h-32 overflow-hidden click-droit-file bg-cover bg-center group hover:scale-105 transition draggable-file @if($restriction) hidden @endif"
@@ -636,7 +637,7 @@
                                 $type = strtolower($file->type);
                                 $filePermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), null, $file->id);
                                 $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(),null, $file->id);
-                            
+
                             @endphp
                              <tr wire:key="list-file-{{ $file->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 draggable-file @if($restriction) hidden @endif" data-file-id="{{ $file->id }}" draggable="true" @if ($file->verrouille) title="Ce fichier est verrouillé et ne peut pas être déplacé." @endif>
                                 <td class="w-4 p-4">
@@ -657,7 +658,7 @@
                                             <small style="font-size: 8px">🚫</small>
                                         @endif
                                         <img src="@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif" class="w-6 h-6 mr-2" alt="file icon">
-                                       
+
                                         {{ \Illuminate\Support\Str::limit($file->nom, 45) }}
                                     </a>
                                 </th>
@@ -806,7 +807,6 @@
                 el.addEventListener('click', function() {
                     let folderId = (el.getAttribute('data-folder-id'))
                     let doc = (el.getAttribute('data-doc'))
-                    console.log(doc)
                     const message = doc === 'folder' ? "Ce dossier et tout son contenu seront supprimés définitivement." : "Ce fichier sera supprimé définitivement.";
                     Swal.fire({
                         title: 'Confirmer la suppression',
@@ -1095,16 +1095,16 @@
         // --- Rendre les éléments déplaçables ---
         const draggableFiles = document.querySelectorAll('.draggable-file');
         draggableFiles.forEach(el => {
-            const isLocked = el.querySelector('svg.text-gray-800') !== null;
-            const permissionNode = el.querySelector('small');
-            const hasNoPermission = permissionNode && (permissionNode.textContent.includes('🔴') || permissionNode.textContent.includes('🚫'));
+            // const isLocked = el.querySelector('svg.text-gray-800') !== null;
+            // const permissionNode = el.querySelector('small');
+            // const hasNoPermission = permissionNode && (permissionNode.textContent.includes('🔴') || permissionNode.textContent.includes('🚫'));
 
-            if (isLocked || hasNoPermission) {
-                el.setAttribute('draggable', 'false');
-                el.style.cursor = 'not-allowed';
-                return;
-            }
-            
+            // if (isLocked || hasNoPermission) {
+            //     el.setAttribute('draggable', 'false');
+            //     el.style.cursor = 'not-allowed';
+            //     return;
+            // }
+
             el.setAttribute('draggable', 'true');
             el.addEventListener('dragstart', e => {
                 e.dataTransfer.effectAllowed = 'move';
@@ -1139,6 +1139,7 @@
 
         const draggableFolders = document.querySelectorAll('.draggable-folder');
         draggableFolders.forEach(el => {
+
             el.addEventListener('dragstart', e => {
                 e.stopPropagation(); // Empêche les conflits si un dossier est dans un autre
                 e.dataTransfer.effectAllowed = 'move';
@@ -1183,6 +1184,7 @@
             });
 
             el.addEventListener('drop', e => {
+                console.log(e)
                 e.preventDefault();
                 e.stopPropagation(); // Important pour les dossiers imbriqués
                 el.classList.remove('bg-blue-100', 'border-2', 'border-dashed', 'border-blue-400');
@@ -1220,7 +1222,7 @@
 
 
                 showSpinner(el); // Show spinner on target
-               
+
 
                 if (itemsJson) {
                     // --- Moving multiple items ---
@@ -1239,6 +1241,7 @@
                     // --- Moving a single item ---
                     const type = e.dataTransfer.getData('type');
                     const id = e.dataTransfer.getData('id');
+
                     if (!id || !type) return;
 
                     const sourceElement = document.querySelector(`[data-${type}-id='${id}']`);
@@ -1246,6 +1249,7 @@
 
                     if (isTargetLocked) {
                         @this.call('prepareMoveToLockedFolder', type, id, targetFolderId);
+
                     } else {
                         if (type === 'file') {
                             @this.call('moveFile', id, targetFolderId);
@@ -1275,6 +1279,16 @@
                 closeBtn.click();
             }
         });
+
+         Livewire.on("show-message",()=>{
+              setTimeout(() => {
+                document.getElementById("messageText").style.transition="opacity 10s"
+                document.getElementById("messageText").style.opacity ="0"
+                setTimeout(() => {
+                 document.getElementById("messageText").style.display ="none"
+                }, 10000);
+              }, 3000);
+        })
     });
 
 
