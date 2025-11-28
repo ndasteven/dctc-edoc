@@ -5,7 +5,7 @@
             class="relative w-full h-screen bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 flex flex-col">
             <!-- En-tête -->
 
-            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg flex-shrink-0">
+            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg flex-shrink-0 overflow-x-hidden overflow-x-scroll">
                 <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
                 <!-- Affichage du chemin d'accès au fichier -->
             @if (!empty($breadcrumbPath))
