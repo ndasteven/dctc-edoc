@@ -116,3 +116,8 @@
         </div>
     @endif
 </div>
+<script>
+   setTimeout(() => {
+    document.getElementById("dropdownNotificationButton").value = ""
+   }, 300);
+</script>

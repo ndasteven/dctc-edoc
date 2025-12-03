@@ -820,6 +820,14 @@ class FolderManager extends Component
     {
         $user = auth()->user(); // Utilisateur connecté
 
+        // Vérifier l'accès au service (si applicable)
+        $sessionService = session()->get('SessionService');
+        if ($sessionService && $user && !\App\Helpers\AccessHelper::superAdmin($user) && !\App\Helpers\AccessHelper::admin($user)) {
+            if ($user->service_id != $sessionService) {
+                abort(403, 'Vous n\'avez pas accès à ce service');
+            }
+        }
+
         // Initialiser $authorizedFolderIds et $authorizedDocumentIds à des tableaux vides par défaut
         $authorizedFolderIds = [];
         $authorizedDocumentIds = [];

@@ -58,6 +58,7 @@ class Document extends Model
             'type' => $this->type,
             'confidentiel' => $this->confidentiel,
             'folder_id' => $this->folder_id,
+            'service_ids' => $this->services->pluck('id')->toArray(), // Ajout des IDs des services
             'services' => $this->services->map->only(['id', 'nom'])->toArray(),
             'created_at' => $this->created_at->timestamp,
         ];
