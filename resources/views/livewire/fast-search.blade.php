@@ -115,19 +115,26 @@
                 </h2>
                 <ul class="divide-y divide-gray-200">
                     @forelse ($folders as $item)
-    
+
                         <a href="{{ route('folders.show', $item->id) }}">
                             <button
-                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex space-x-2">
-                                📁- {{ $item->name }}
+                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2 overflow-hidden overflow-x-scroll">
+                                <div class="flex items-center">
+                                    📁 <span class="ml-2 font-semibold">{{ $item->name }}</span>
+                                </div>
+                                @if(isset($folderPaths[$item->id]))
+                                    <p class="text-xs  mt-1 text-left text-blue-600 dark:text-sky-400" style="max-width:100%">
+                                        Chemin: {{ $folderPaths[$item->id] }} 
+                                    </p>
+                                @endif
                             </button>
                         </a>
                     @empty
                     @endforelse
                     @forelse ($documents as $item)
                         <a href="{{ route('pdf.view', $item->id) }}">
-                            <button
-                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2 overflow-scroll">
+                            <div
+                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2 overflow-hidden overflow-x-scroll">
                                 <div class="flex items-center">
                                     @if ($item->type == 'pdf')
                                         <span>
@@ -140,14 +147,19 @@
                                             </svg>
                                         </span>
                                     @endif
-                                    <p class="ml-2">{{ $item->nom }}</p>
+                                    <p class="ml-2 font-semibold">{{ $item->nom }}.{{ $item->type }}</p>
                                 </div>
+                                @if(isset($documentPaths[$item->id]))
+                                    <p class="text-xs  mt-1 text-left text-blue-600 dark:text-sky-400" style="max-width:100%">
+                                        Chemin: {{ $documentPaths[$item->id] }}
+                                    </p>
+                                @endif
                                 @if(isset($formattedDocuments[$item->id]['content']))
                                     <p class="text-xs text-gray-500 mt-1 truncate text-left " style="max-width:100%" >
                                         ...{!! $formattedDocuments[$item->id]['content'] !!}...
                                     </p>
                                 @endif
-                            </button>
+                            </div>
                         </a>
                     @empty
                         @if(count($folders) == 0)
@@ -162,12 +174,19 @@
                 <ul class="divide-y divide-gray-200">
                      @forelse ($folders as $item)
                         @php
-                            $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(), $item->id);   
+                            $restriction = \App\Helpers\AccessHelper::getRectriction(auth()->id(), $item->id);
                         @endphp
                         <a href="{{ route('folders.show', $item->id) }}" class="@if ($restriction) hidden @endif">
                             <button
-                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex space-x-2">
-                                📁- {{ $item->name }}
+                                class="py-2.5 w-full px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex flex-col items-start space-x-2 overflow-hidden overflow-x-scroll">
+                                <div class="flex items-center">
+                                    📁 <span class="ml-2 font-semibold">{{ $item->name }}</span>
+                                </div>
+                                @if(isset($folderPaths[$item->id]))
+                                    <p class="text-xs  mt-1 text-left text-blue-600 dark:text-sky-400" style="max-width:100%">
+                                        Chemin: {{ $folderPaths[$item->id] }}
+                                    </p>
+                                @endif
                             </button>
                         </a>
                     @empty
@@ -191,8 +210,13 @@
                                             </svg>
                                         </span>
                                     @endif
-                                    <p class="ml-2">{{ $item->nom }}</p>
+                                    <p class="ml-2 font-semibold">{{ $item->nom }}.{{ $item->type }}</p>
                                 </div>
+                                @if(isset($documentPaths[$item->id]))
+                                    <p class="text-xs  mt-1 text-left text-blue-600 dark:text-sky-400" style="max-width:100%">
+                                        Chemin: {{ $documentPaths[$item->id] }}
+                                    </p>
+                                @endif
                                 @if(isset($formattedDocuments[$item->id]['content']))
                                     <p class="text-xs text-gray-500 mt-1 truncate text-left">
                                         ...{!! $formattedDocuments[$item->id]['content'] !!}...

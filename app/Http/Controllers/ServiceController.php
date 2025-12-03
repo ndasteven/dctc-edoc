@@ -7,14 +7,22 @@ use Illuminate\Http\Request;
 use App\Models\ActivityLog;
 use App\Models\Document;
 use App\Models\User;
+use App\Helpers\AccessHelper;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
     public function index(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
     {
+        $user = Auth::user();
 
-        $services = Service::all();
+        // Les SuperAdministrateurs et Administrateurs voient tous les services
+        if (AccessHelper::superAdmin($user) || AccessHelper::admin($user)) {
+            $services = Service::all();
+        } else {
+            // Les utilisateurs standards ne voient que leur service
+            $services = Service::where('id', $user->service_id)->get();
+        }
 
         $totalEmployes = $services->sum(function($service) {
             return count($service->users);
@@ -26,6 +34,13 @@ class ServiceController extends Controller
 
     public function destroy($id)
     {
+        $user = Auth::user();
+
+        // Seuls les SuperAdministrateurs peuvent supprimer des services
+        if (!AccessHelper::superAdmin($user)) {
+            abort(403, 'Vous n\'êtes pas autorisé à supprimer des services');
+        }
+
         $service = Service::find($id);
 
         if ($service) {
@@ -38,6 +53,13 @@ class ServiceController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user = Auth::user();
+
+        // Seuls les SuperAdministrateurs et Administrateurs peuvent modifier des services
+        if (!AccessHelper::superAdmin($user) && !AccessHelper::admin($user)) {
+            abort(403, 'Vous n\'êtes pas autorisé à modifier des services');
+        }
+
         $service = Service::findOrFail($id);
 
         // Validation des données
@@ -54,6 +76,15 @@ class ServiceController extends Controller
 
     public function show($id): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
     {
+        $user = Auth::user();
+
+        // Vérifier si l'utilisateur a accès à ce service
+        if (!AccessHelper::superAdmin($user) && !AccessHelper::admin($user)) {
+            if ($user->service_id != $id) {
+                abort(403, 'Vous n\'avez pas accès à ce service');
+            }
+        }
+
         $service = Service::findOrFail($id);
         $users = User::all();
         $users_tag = User::where('id', '!=', Auth::id())->whereDoesntHave('role', function ($query) { $query->where('nom', 'SuperAdministrateur'); }) ->get();
@@ -63,6 +94,15 @@ class ServiceController extends Controller
 
     public function identUser(Request $request, $id)
     {
+        $user = Auth::user();
+
+        // Vérifier si l'utilisateur a accès à ce service
+        if (!AccessHelper::superAdmin($user) && !AccessHelper::admin($user)) {
+            if ($user->service_id != $id) {
+                abort(403, 'Vous n\'avez pas accès à ce service');
+            }
+        }
+
         $validatedData = $request->validate([
             'user-input' => 'required|string',
         ]);
@@ -108,6 +148,12 @@ class ServiceController extends Controller
 
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
+        $user = Auth::user();
+
+        // Seuls les SuperAdministrateurs et Administrateurs peuvent créer des services
+        if (!AccessHelper::superAdmin($user) && !AccessHelper::admin($user)) {
+            abort(403, 'Vous n\'êtes pas autorisé à créer des services');
+        }
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:services,nom,',
