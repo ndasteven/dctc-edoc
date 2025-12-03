@@ -3,6 +3,59 @@
 /public/build
 /public/hot
 /public/storage
+
+# --- Logs ---
+/storage/logs/*.log
+/storage/logs/*.log.*
+/storage/framework/cache/data/*
+/storage/framework/views/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/bootstrap/cache/*.php
+/bootstrap/cache/*.cache
+
+# --- Cache Laravel ---
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
+/bootstrap/cache/*.php
+
+# --- Storage général (TOUT IGNORER sauf public) ---
+/storage/*
+!/storage/app/public
+!/storage/app/public/*
+/storage/app/public/*.gitignore
+
+# --- IMPORTANT POUR TON PROJET ---
+# Dossiers de fichiers archivés et conversions :.pdf/.doc/.docx etc.
+# Ces fichiers NE DOIVENT JAMAIS être poussés sur GitHub.
+/storage/app/public/archives/
+/storage/app/private/
+/storage/app/livewire-tmp/
+#/storage/app/private/storage/  # Cas particulier que tu avais
+
+# Temp Uploads / Livewire tmp
+/storage/framework/cache/data/*
+/storage/framework/testing/*
+/storage/app/livewire-tmp/
+storage/app/livewire-tmp/*
+
+# --- ONLYOFFICE temp files ---
+/storage/app/onlyoffice/
+/storage/app/public/onlyoffice-temp/
+/public/onlyoffice/
+
+# --- Autres fichiers sensibles ---
+/public/storage
+
+# --- Composer ---
+composer.lock
+composer.phar
+
+# --- npm audit ---
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
 /storage/*.key
 /storage/pail
 /vendor
