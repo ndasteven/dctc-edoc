@@ -3,12 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use App\Helpers\AccessHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class serviceFolder extends Controller
 {
     public $serviceName;
     public function getFolderService($serviceId){
+        $user = Auth::user();
+
+        // Vérifier l'accès au service
+        if (!AccessHelper::superAdmin($user) && !AccessHelper::admin($user)) {
+            if ($user->service_id != $serviceId) {
+                abort(403, 'Vous n\'avez pas accès à ce service');
+            }
+        }
+
         session()->forget('currentFolder');
 
         if ($serviceId == 0) {
