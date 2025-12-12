@@ -37,12 +37,17 @@ class FolderManager extends Component
     public $users_confidence = [];
     public $folderId;
     public $folderCreateId;
-    protected $listeners = ['deleteSelectedItems', 'loadMore', 'unlockSuccess' => 'executePendingMove'];
+    protected $listeners = [
+        'deleteSelectedItems',
+        'loadMore',
+        'unlockSuccess' => 'executePendingMove'
+    ];
 
     // Propriétés pour le déplacement en attente
     public $pendingMoveSourceId;
     public $pendingMoveSourceType;
     public $pendingMoveTargetId;
+
 
     public $perPageFolders = 12;
     public $perPageFiles = 12;
@@ -820,6 +825,14 @@ class FolderManager extends Component
     {
         $user = auth()->user(); // Utilisateur connecté
 
+        // Vérifier l'accès au service (si applicable)
+        $sessionService = session()->get('SessionService');
+        if ($sessionService && $user && !\App\Helpers\AccessHelper::superAdmin($user) && !\App\Helpers\AccessHelper::admin($user)) {
+            if ($user->service_id != $sessionService) {
+                abort(403, 'Vous n\'avez pas accès à ce service');
+            }
+        }
+
         // Initialiser $authorizedFolderIds et $authorizedDocumentIds à des tableaux vides par défaut
         $authorizedFolderIds = [];
         $authorizedDocumentIds = [];
@@ -861,7 +874,7 @@ class FolderManager extends Component
             $foldersQuery->orderBy('updated_at', $this->sortDirection);
         }
 
-        $folders = $foldersQuery->withCount('children')->withCount('files')->take($this->perPageFolders)->get();
+        $folders = $foldersQuery->withCount(['children', 'files', 'reminders'])->take($this->perPageFolders)->get();
         $totalFolders = (clone $foldersQuery)->count(); // Cloner la requête pour le count
         $this->hasMoreFolders = ($totalFolders > $this->perPageFolders);
 
@@ -882,7 +895,7 @@ class FolderManager extends Component
             $documentQuery->orderBy('updated_at', $this->sortDirection);
         }
 
-        $fichiers = $documentQuery->take($this->perPageFiles)->get();
+        $fichiers = $documentQuery->withCount('reminders')->take($this->perPageFiles)->get();
         $totalFiles = (clone $documentQuery)->count(); // Cloner la requête pour le count
         $this->hasMoreFiles = ($totalFiles > $this->perPageFiles);
 
@@ -1080,4 +1093,5 @@ class FolderManager extends Component
         $this->dispatch('resetJS');
         $this->dispatch("show-message");
     }
+
 }

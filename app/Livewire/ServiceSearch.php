@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Service;
 use App\Models\User;
+use App\Helpers\AccessHelper;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceSearch extends Component
@@ -19,8 +20,17 @@ class ServiceSearch extends Component
         if (strlen($this->query) == 0) {
             $services = [];
         } else {
-            $services = Service::where('nom', 'like', '%' . $this->query . '%')
-            ->paginate(10);
+            // Les SuperAdministrateurs et Administrateurs peuvent rechercher tous les services
+            if (AccessHelper::superAdmin($user) || AccessHelper::admin($user)) {
+                $services = Service::where('nom', 'like', '%' . $this->query . '%')
+                ->paginate(10);
+            } else {
+                // Les utilisateurs standards ne peuvent rechercher que leur propre service
+                $services = Service::where('nom', 'like', '%' . $this->query . '%')
+                    ->where('id', $user->service_id)
+                    ->paginate(10);
+            }
+
             $this->services_ident = $user->identificate()->pluck('nom')->toArray();
         }
 

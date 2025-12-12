@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckLicence;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\CheckServiceAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'checklicence' => CheckLicence::class,
             'checkrole' => CheckRole::class,
+            'checkservice' => CheckServiceAccess::class,
         ]);
 
 
@@ -32,5 +34,5 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return $response;
         });
-        
+
     })->create();

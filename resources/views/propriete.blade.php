@@ -1,6 +1,9 @@
 <!-- Modal toggle -->
 {{-- push de save --}}
-<button data-modal-target="propiete" id="propriete" data-modal-toggle="propiete" type="button"></button>
+<button data-modal-target="propiete" id="propriete" data-modal-toggle="propiete"
+        data-file-id="{{ $docClickPropriete === 'file' ? $idClickPropriete : null }}"
+        data-folder-id="{{ $docClickPropriete === 'folder' ? $idClickPropriete : null }}"
+        type="button"></button>
 <!-- Main modal -->
 <div id="propiete" tabindex="-1" aria-hidden="true"
     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full "
@@ -324,6 +327,18 @@
                         </button>
                     @endif
 
+                    <!-- Ajouter un rappel -->
+                    <button
+                        class="flex items-center space-x-2 bg-green-500 hover:bg-green-400 px-4 py-3 rounded-lg shadow-md"
+                        @click="openReminderModal({{ $docClickPropriete === 'file' ? $idClickPropriete : 'null' }}, {{ $docClickPropriete === 'folder' ? $idClickPropriete : 'null' }})"
+                        wire:loading.attr="disabled">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Ajouter un rappel</span>
+                    </button>
+
                     <!-- Menu déroulant Droits & Sécurité - Dossier: LE uniquement | Document: LE uniquement -->
                     <div class="col-span-2">
                         @if ($canManageRights)
@@ -620,6 +635,56 @@
     </div>
 </div>
 
+<!-- Modal : Ajouter un rappel -->
+<div id="reminderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div class="absolute inset-0 bg-black opacity-50" onclick="closeReminderModal()"></div>
+    <div class="bg-white rounded shadow-lg w-full max-w-md p-6 z-10">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Ajouter un rappel</h2>
+            <button onclick="closeReminderModal()" class="text-gray-500 text-2xl">&times;</button>
+        </div>
+
+        <form id="reminderForm">
+            <div class="mb-4">
+                <label for="reminderTitle" class="block text-gray-700 font-bold mb-2">Titre du rappel:</label>
+                <input type="text" id="reminderTitle" name="reminderTitle"
+                    class="w-full border rounded px-3 py-2" placeholder="Entrez le titre du rappel...">
+            </div>
+
+            <div class="mb-4">
+                <label for="reminderText" class="block text-gray-700 font-bold mb-2">Message du rappel:</label>
+                <textarea id="reminderText" name="reminderText" rows="3"
+                    class="w-full border rounded px-3 py-2" placeholder="Entrez votre rappel ici..."></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="reminderDate" class="block text-gray-700 font-bold mb-2">Date du rappel:</label>
+                <input type="date" id="reminderDate" name="reminderDate"
+                    class="w-full border rounded px-3 py-2">
+            </div>
+
+            <div class="mb-4">
+                <label for="reminderTime" class="block text-gray-700 font-bold mb-2">Heure du rappel:</label>
+                <input type="time" id="reminderTime" name="reminderTime"
+                    class="w-full border rounded px-3 py-2">
+            </div>
+        </form>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <button type="button" onclick="closeReminderModal()"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
+            <button type="button" id="saveReminderBtn" onclick="saveReminder()"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center">
+                <span id="saveReminderText">Enregistrer</span>
+                <svg id="saveReminderSpinner" class="animate-spin ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     // === Fonctions pour les modaux ===
     function openArchiveModal() {
@@ -712,6 +777,158 @@
     function closeRestriction() {
         document.getElementById('restrictUserModal').classList.add("hidden")
     }
+
+    // Variables globales pour stocker les IDs
+    let currentFileId = null;
+    let currentFolderId = null;
+
+    // Fonction pour ouvrir le modal de rappel
+    function openReminderModal(fileId, folderId) {
+        currentFileId = fileId;
+        currentFolderId = folderId;
+        document.getElementById('reminderModal').classList.remove("hidden");
+    }
+
+    // Fonction pour fermer le modal de rappel
+    function closeReminderModal() {
+        document.getElementById('reminderModal').classList.add("hidden");
+    }
+
+    // Fonction pour sauvegarder le rappel
+    function saveReminder() {
+        const reminderTitle = document.getElementById('reminderTitle').value;
+        const reminderText = document.getElementById('reminderText').value;
+        const reminderDate = document.getElementById('reminderDate').value;
+        const reminderTime = document.getElementById('reminderTime').value;
+
+        if(reminderTitle && reminderText && reminderDate && reminderTime) {
+            // Vérifier qu'un rappel est lié à un document OU un dossier
+            if (!currentFileId && !currentFolderId) {
+                alert('Erreur: Impossible de déterminer le document ou le dossier.');
+                return;
+            }
+
+            // Afficher le spinner et désactiver le bouton
+            document.getElementById('saveReminderSpinner').classList.remove('hidden');
+            document.getElementById('saveReminderBtn').disabled = true;
+
+            // Envoyer les données au serveur via AJAX
+            fetch('/reminders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: reminderTitle,
+                    message: reminderText,
+                    reminder_date: reminderDate,
+                    reminder_time: reminderTime,
+                    file_id: currentFileId,
+                    folder_id: currentFolderId,
+                    is_active: true
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || 'Erreur lors de la création du rappel');
+                    });
+                }
+            })
+            .then(data => {
+                console.log('Rappel sauvegardé:', data);
+                // Utiliser le système de notification de session existant
+                closeReminderModal();
+                // Réinitialiser le formulaire
+                document.getElementById('reminderForm').reset();
+
+                // Mettre à jour le message de notification existant
+                const messageDiv = document.getElementById('messageText');
+                if (messageDiv) {
+                    messageDiv.innerHTML = 'Rappel ajouté avec succès!';
+                    messageDiv.className = 'p-2 text-sm text-green-700 bg-green-100 rounded';
+                    // Afficher temporairement la div si elle est cachée
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.opacity = '1';
+                    // Cacher automatiquement après 3 secondes
+                    setTimeout(() => {
+                        messageDiv.style.transition = 'opacity 10s';
+                        messageDiv.style.opacity = '0';
+                        setTimeout(() => {
+                            messageDiv.style.display = 'none';
+                        }, 10000);
+                    }, 3000);
+                } else {
+                    // Si la div n'existe pas, créer une notification temporaire
+                    const tempDiv = document.createElement('div');
+                    tempDiv.id = 'messageText';
+                    tempDiv.className = 'p-2 text-sm text-green-700 bg-green-100 rounded fixed top-4 right-4 z-50';
+                    tempDiv.innerHTML = 'Rappel ajouté avec succès!';
+                    document.body.appendChild(tempDiv);
+
+                    setTimeout(() => {
+                        tempDiv.remove();
+                    }, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                // Afficher l'erreur de manière cohérente avec le reste de l'interface
+                const messageDiv = document.getElementById('messageText');
+                if (messageDiv) {
+                    messageDiv.innerHTML = 'Erreur lors de la création du rappel: ' + error.message;
+                    messageDiv.className = 'p-2 text-sm text-red-700 bg-red-100 rounded';
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.opacity = '1';
+                    // Cacher automatiquement après 5 secondes
+                    setTimeout(() => {
+                        messageDiv.style.transition = 'opacity 10s';
+                        messageDiv.style.opacity = '0';
+                        setTimeout(() => {
+                            messageDiv.style.display = 'none';
+                        }, 10000);
+                    }, 5000);
+                } else {
+                    // Si la div n'existe pas, créer une notification temporaire
+                    const tempDiv = document.createElement('div');
+                    tempDiv.id = 'messageText';
+                    tempDiv.className = 'p-2 text-sm text-red-700 bg-red-100 rounded fixed top-4 right-4 z-50';
+                    tempDiv.innerHTML = 'Erreur lors de la création du rappel: ' + error.message;
+                    document.body.appendChild(tempDiv);
+
+                    setTimeout(() => {
+                        tempDiv.remove();
+                    }, 7000);
+                }
+            })
+            .finally(() => {
+                // Cacher le spinner et réactiver le bouton
+                document.getElementById('saveReminderSpinner').classList.add('hidden');
+                document.getElementById('saveReminderBtn').disabled = false;
+            });
+        } else {
+            alert('Veuillez remplir tous les champs obligatoires.');
+        }
+    }
+
+    // Fonction utilitaire pour activer/désactiver le spinner
+    function toggleSaveReminderSpinner(show) {
+        const spinner = document.getElementById('saveReminderSpinner');
+        const button = document.getElementById('saveReminderBtn');
+
+        if (show) {
+            spinner.classList.remove('hidden');
+            button.disabled = true;
+        } else {
+            spinner.classList.add('hidden');
+            button.disabled = false;
+        }
+    }
+
 
     document.addEventListener('errorVerrou', () => {
         alert('error')

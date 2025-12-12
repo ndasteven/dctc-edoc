@@ -104,4 +104,37 @@ class Folder extends Model
             ],
         ];
     }
+
+    public function reminders()
+    {
+        return $this->hasMany(Reminder::class, 'folder_id');
+    }
+
+    public function getPathAttribute()
+    {
+        $path = [$this->name];
+        $current = $this;
+
+        // Charger les relations parentales au fur et à mesure
+        while ($current && $current->parent_id) {
+            $current = $current->parent;
+            if ($current) {
+                $path[] = $current->name;
+            } else {
+                break;
+            }
+        }
+
+        return implode(' / ', array_reverse($path));
+    }
+
+    public static function getFolderPath($folderId)
+    {
+        $folder = static::with('parent')->find($folderId);
+        if (!$folder) {
+            return 'Dossier supprimé';
+        }
+
+        return $folder->path;
+    }
 }

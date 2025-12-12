@@ -61,6 +61,12 @@
                                 🔍 <span class="ml-2">Consulter les services</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('reminders.list') }}"
+                                class="flex items-center text-blue-600 hover:text-blue-800 transition">
+                                ⏰ <span class="ml-2">Voir mes rappels</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 

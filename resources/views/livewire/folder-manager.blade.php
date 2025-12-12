@@ -125,6 +125,14 @@
 
         @endif
 
+        <!-- Légende pour les icônes -->
+        <div class="flex items-center mb-4 text-sm text-gray-600">
+            <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="mr-4">: Élément avec rappel</span>
+        </div>
+
         @if (count($folders) > 0 or count($fichiers) > 0)
             <!-- supprimmer la selection -->
             <div id="bulk-delete-bar"
@@ -258,6 +266,15 @@
                                 📁 {{ $folder->children_count }}
                             </span>
                         </div>
+
+                        <!-- Icône de rappel si le dossier a des rappels -->
+                        @if ($folder->reminders_count > 0)
+                            <div class="absolute top-2 right-2">
+                                <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        @endif
                         <!-- Dropdown menu -->
                         <div id="dropdownRight-{{ $folder->id }}"
                             class="z-10 absolute hidden bg-blue-600 divide-y divide-gray-100  shadow-sm w-44 dark:bg-gray-700">
@@ -440,6 +457,15 @@
                                 @endif
                             </div>
 
+                            <!-- Icône de rappel si le fichier a des rappels -->
+                            @if ($file->reminders_count > 0)
+                                <div class="absolute top-2 right-2">
+                                    <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            @endif
+
                             <!-- Dropdown menu pour file-->
                             <div id="dropdownRight-{{ $file->id }}"
                                 class="z-10 absolute top-0 hidden  bg-blue-600 divide-y divide-gray-100  shadow-sm w-40 dark:bg-gray-700">
@@ -588,6 +614,11 @@
                                         @endif
                                         <img src="{{ asset('img/folder.png') }}" class="w-6 h-6 mr-2" alt="folder icon">
                                         {{ \Illuminate\Support\Str::limit($folder->name, 45) }}
+                                        @if ($folder->reminders_count > 0)
+                                            <svg class="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        @endif
                                     </a>
                                 </th>
                                 <td class="px-6 py-4">
@@ -661,6 +692,11 @@
                                         <img src="@if ($file->type == 'pdf') {{ asset('img/pdf.png') }} @elseif ($type == 'docx' or $type == 'doc') {{ asset('img/word.png') }} @elseif ($type == 'xls' or $type == 'xlsx') {{ asset('img/excel.png') }} @elseif ($type == 'ppt' or $type == 'pptx') {{ asset('img/power.png') }} @elseif ($type == 'csv') {{ asset('img/csv.png') }} @elseif ($type == 'png' || $type == 'jpg' || $type == 'jpeg') {{ asset('img/img.png') }}  @else {{ asset('img/file.png') }} @endif" class="w-6 h-6 mr-2" alt="file icon">
 
                                         {{ \Illuminate\Support\Str::limit($file->nom, 45) }}
+                                        @if ($file->reminders_count > 0)
+                                            <svg class="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        @endif
                                     </a>
                                 </th>
                                 <td class="px-6 py-4">
@@ -1293,11 +1329,12 @@
     });
 
 
-    // Initialisation et ré-initialisation
+    // Initialisation et réinitialisation
     document.addEventListener('DOMContentLoaded', initDragAndDrop);
     document.addEventListener('resetJS', function() {
         setTimeout(() => {
             initDragAndDrop();
         }, 100);
     });
+
 </script>
