@@ -2,20 +2,17 @@
      <!-- Notification Toast -->
 
 
-    <div id="toast-success" class="fixed top-4 right-4 z-[9999] flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 transition-opacity duration-300 opacity-0" role="alert">
-        <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
-            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-            </svg>
-            <span class="sr-only">Check icon</span>
-        </div>
-        <div class="ml-3 text-sm font-normal" id="toast-message">Rappel modifier</div>
-    </div>
-    
+   
+
     <div class="mb-6">
+         @if (session()->has('message'))
+            <div id="messageText" class="p-2 text-sm fixed top-4 right-4 bg-green-600 text-white p-4 rounded shadow">
+                {!! session('message') !!}
+            </div>
+        @endif
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Mes Rappels <span wire:loading>
                 <span role="status">
-                    <svg aria-hidden="true" class="w-4 h-5 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                    <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
                         viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d=" M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591
                         0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100
@@ -73,52 +70,37 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Titre</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Message</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Date/Heure</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Cible</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Statut</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Titre</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Message</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Date / Heure</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Statut</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700" wire:poll.10s="updateReminders">
+
+                    <!-- ⬇️ ZONE ANIMÉE -->
+                    <tbody
+                        x-data="sortableReminders()"
+                        x-init="init()"
+                        wire:poll.10s="updateReminders"
+                        class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700"
+                    >
                         @foreach ($reminders as $reminder)
-                            <tr wire:key="reminder-{{ $reminder->id }}"
-                                class="{{ $loop->index % 2 == 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900' }}">                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ $reminder->title }}</div>
+                            <tr
+                                wire:key="reminder-{{ $reminder->id }}"
+                                x-ref="item-{{ $reminder->id }}"
+                                class="transition-all duration-700 ease-in-out
+                                    {{ $loop->index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900' }}"
+                            >
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $reminder->title }}
                                 </td>
+
+                                <td class="px-6 py-4 text-gray-500 dark:text-gray-300">
+                                    {{ Str::limit($reminder->message, 30) }}
+                                </td>
+
                                 <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-500 dark:text-gray-300 max-w-xs"
-                                        data-tooltip-target="message-{{ $reminder->id }}" data-tooltip-trigger="hover">
-                                        @if ($reminder->message)
-                                            {{ strlen($reminder->message) > 20 ? substr($reminder->message, 0, 20) . '...' : $reminder->message }}
-                                        @else
-                                            <span class="text-gray-400 italic">Aucun message</span>
-                                        @endif
-                                    </div>
-                                    @if ($reminder->message)
-                                        <div id="message-{{ $reminder->id }}" role="tooltip"
-                                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                            <div class="font-semibold">Message:</div>
-                                            {{ $reminder->message }}
-                                            <div class="tooltip-arrow" data-popper-arrow></div>
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900 dark:text-white">
                                         {{ $reminder->formatted_datetime }}
                                     </div>
@@ -126,109 +108,40 @@
                                         {{ $reminder->time_remaining['status'] }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        @if ($reminder->folder_id)
-                                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 20 18">
-                                                <path
-                                                    d="M14 2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V2Z" />
-                                            </svg>
-                                            <button type="button" data-tooltip-target="folder-path-{{ $reminder->id }}"
-                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                <svg class="w-5 h-5" aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-                                            <div id="folder-path-{{ $reminder->id }}" role="tooltip"
-                                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                                <div class="font-semibold">Dossier:</div>
-                                                {{ $this->getFolderPath($reminder->folder) }}
-                                                <div class="tooltip-arrow" data-popper-arrow></div>
-                                            </div>
-                                        @else
-                                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
-                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor" viewBox="0 0 20 16">
-                                                <path
-                                                    d="M19 4h-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5a1 1 0 0 1 2 0Z" />
-                                            </svg>
-                                            <button type="button"
-                                                data-tooltip-target="document-path-{{ $reminder->id }}"
-                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                <svg class="w-5 h-5" aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-                                            <div id="document-path-{{ $reminder->id }}" role="tooltip"
-                                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                                                <div class="font-semibold">Fichier:</div>
-                                                {{ $this->getDocumentPath($reminder->document) }}
-                                                <div class="tooltip-arrow" data-popper-arrow></div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+
+                                <td class="px-6 py-4">
                                     @if ($reminder->is_completed)
-                                        <span
-                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                                             Complété
                                         </span>
                                     @else
-                                        <span
-                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
                                             Actif
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex space-x-2">
-                                        @if ($reminder->folder_id)
-                                            <a href="/folders/{{ $reminder->folder->id }}"
-                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                Voir
-                                            </a>
-                                        @else
-                                            <a href="/pdf/{{ $reminder->document->id }}"
-                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                Voir
-                                            </a>
-                                        @endif
 
-                                        <button wire:click="toggleCompleted({{ $reminder->id }})"
-                                            class="ml-2 {{ $reminder->is_completed ? 'text-green-600 hover:text-green-900' : 'text-yellow-600 hover:text-yellow-900' }} dark:text-yellow-400 dark:hover:text-yellow-300">
-                                            {{ $reminder->is_completed ? 'Reprendre' : 'Compléter' }}
-                                        </button>
+                                <td class="px-6 py-4 space-x-2 text-sm">
+                                    <button wire:click="toggleCompleted({{ $reminder->id }})"
+                                        class="text-green-600 hover:underline">
+                                        Compléter
+                                    </button>
 
-                                        <button wire:click="editReminder({{ $reminder->id }})"
-                                            class="ml-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                            Modifier
-                                        </button>
+                                    <button wire:click="editReminder({{ $reminder->id }})"
+                                        class="text-blue-600 hover:underline">
+                                        Modifier
+                                    </button>
 
-                                        <button wire:click="deleteReminder({{ $reminder->id }})"
-                                            onclick="confirm('Êtes-vous sûr de vouloir supprimer ce rappel ?') || event.stopImmediatePropagation()"
-                                            class="ml-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                            Supprimer
-                                        </button>
-                                    </div>
+                                    <button wire:click="deleteReminder({{ $reminder->id }})"
+                                        class="text-red-600 hover:underline">
+                                        Supprimer
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
+                    <!-- ⬆️ FIN ZONE ANIMÉE -->
+
                 </table>
             </div>
 
@@ -255,11 +168,7 @@
         @endif
     </div>
 
-    @if (session()->has('message'))
-        <div id="messageText" class="p-2 text-sm text-green-700 bg-green-100 rounded">
-            {!! session('message') !!}
-        </div>
-    @endif
+   
 
     <!-- Modal d'édition de rappel -->
     <div id="editReminderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center" wire:ignore.self>
@@ -269,7 +178,7 @@
                 <h2 class="text-xl font-bold">Modifier le rappel</h2>
                 <button onclick="closeEditReminderModal()" class="text-gray-500 text-2xl">&times;</button>
             </div>
-            <form wire:submit.prevent="updateReminder">
+            <form id="formRappel" wire:submit.prevent="updateReminder">
                 <input type="hidden" id="editReminderId" wire:model="editingReminderId">
                 <div class="mb-4">
                     <label for="editReminderTitle" class="block text-gray-700 font-bold mb-2">Titre du rappel:</label>
@@ -320,6 +229,7 @@
 <!-- Script pour gérer l'édition des rappels -->
 <script>
     document.addEventListener('livewire:init', () => {
+        
         Livewire.on('editReminderRequested', (event) => {
             // Ouvrir le modal après que les données soient mises à jour dans Livewire
             setTimeout(() => {
@@ -359,4 +269,62 @@
         // Réinitialiser le formulaire Livewire
         Livewire.dispatch('close-edit-modal');
     }
+</script>
+
+<!-- ===================== -->
+<!-- 🔥 SCRIPT ANIMATION UX -->
+<!-- ===================== -->
+<script>
+function sortableReminders() {
+    return {
+        positions: new Map(),
+
+        init() {
+            this.$nextTick(() => this.capture());
+
+            Livewire.hook('message.processed', () => {
+                this.animate();
+            });
+        },
+
+        capture() {
+            this.positions.clear();
+            this.$el.querySelectorAll('[x-ref]').forEach(el => {
+                this.positions.set(el, el.getBoundingClientRect().top);
+            });
+        },
+
+        animate() {
+            this.$nextTick(() => {
+                this.$el.querySelectorAll('[x-ref]').forEach(el => {
+                    const oldTop = this.positions.get(el);
+                    const newTop = el.getBoundingClientRect().top;
+
+                    if (oldTop !== undefined) {
+                        const delta = oldTop - newTop;
+
+                        if (delta !== 0) {
+                            el.style.transform = `translateY(${delta}px)`;
+                            el.style.transition = 'none';
+
+                            // 🔥 BONUS UX : highlight
+                            el.classList.add('ring-2', 'ring-orange-400', 'shadow-lg');
+
+                            requestAnimationFrame(() => {
+                                el.style.transform = '';
+                                el.style.transition = 'transform 700ms ease';
+                            });
+
+                            setTimeout(() => {
+                                el.classList.remove('ring-2', 'ring-orange-400', 'shadow-lg');
+                            }, 1200);
+                        }
+                    }
+                });
+
+                this.capture();
+            });
+        }
+    }
+}
 </script>

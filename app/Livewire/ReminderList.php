@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\Reminder;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ReminderNotification;
 
 class ReminderList extends Component
 {
@@ -15,11 +17,17 @@ class ReminderList extends Component
     public $filterType = 'all'; // all, completed, active, overdue
     public $perPage = 10;
     public $isEditing = false;
+    public $sentReminders = [];
 
     protected $queryString = ['search', 'filterType'];
 
     public function render()
     {
+        $this->checkAndSendReminders();
+        $now = Carbon::now();
+        $nowDate = $now->toDateString();
+        $nowTime = $now->toTimeString();
+
         $query = Reminder::with(['document', 'folder', 'user'])
             ->where('user_id', auth()->id());
 
@@ -51,14 +59,84 @@ class ReminderList extends Component
                 break;
         }
 
-        // Trier par statut (actif d'abord), puis par date/heure la plus proche
-        // Les rappels terminés seront en bas, les plus proches en haut
-        $query->orderBy('is_completed', 'asc')  // Actifs (0) d'abord, puis complétés (1)
-              ->orderBy('reminder_date', 'asc')  // Puis tri par date la plus proche
-              ->orderBy('reminder_time', 'asc'); // Puis par heure la plus proche
+        // Trier les rappels selon les priorités définies par l'utilisateur:
+        // Priorité 1 : "Arrivé" - Les rappels en retard (passés)
+        // Priorité 2 : "Moins de 10min avant arrivé du rappel" - Les rappels qui arriveront dans les 10 prochaines minutes
+        // Priorité 3 : "Pas encore arrivé" - Les rappels futurs
+        // Priorité 4 : "Déjà passé" - Les rappels complétés
+        // $now = Carbon::now();
+        // $tenMinutesLater = (clone $now)->addMinutes(10); // Cloner $now pour éviter de le modifier
+
+        /* =========================================================
+         | TRI pour agencé les larappel des plus iminent au moin iminent
+         ========================================================= */
+
+        $query->selectRaw("
+            reminders.*,
+            CASE
+                -- 1️⃣ ARRIVÉ (retard < 10 min)
+                WHEN is_completed = 0
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        CONCAT(reminder_date, ' ', reminder_time),
+                        ?
+                    ) BETWEEN 0 AND 10
+                THEN 1
+
+                -- 2️⃣ IMMINENT (dans 10 min)
+                WHEN is_completed = 0
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        ?,
+                        CONCAT(reminder_date, ' ', reminder_time)
+                    ) BETWEEN 0 AND 10
+                THEN 2
+
+                -- 3️⃣ FUTUR (>10 min)
+                WHEN is_completed = 0
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        ?,
+                        CONCAT(reminder_date, ' ', reminder_time)
+                    ) > 10
+                THEN 3
+
+                -- 4️⃣ DÉJÀ PASSÉ (>10 min)
+                WHEN is_completed = 0
+                    AND TIMESTAMPDIFF(
+                        MINUTE,
+                        CONCAT(reminder_date, ' ', reminder_time),
+                        ?
+                    ) > 10
+                THEN 4
+
+                -- 5️⃣ COMPLÉTÉ
+                WHEN is_completed = 1 THEN 5
+
+                ELSE 6
+            END AS time_priority
+        ", [
+            $now, // arrivé
+            $now, // imminent
+            $now, // futur
+            $now  // déjà passé
+        ])
+
+        ->orderBy('time_priority')
+
+        ->orderByRaw("
+            ABS(
+                TIMESTAMPDIFF(
+                    SECOND,
+                    CONCAT(reminder_date, ' ', reminder_time),
+                    ?
+                )
+            ) ASC
+        ", [$now]);
+
 
         // Récupérer les rappels paginés avec les relations nécessaires
-        $reminders = $query->select(['*', 'is_completed as is_completed'])->paginate($this->perPage);
+        $reminders = $query->paginate($this->perPage);
 
         // Pour chaque rappel, charger les dossiers parents de manière récursive
         foreach($reminders as $reminder) {
@@ -72,6 +150,74 @@ class ReminderList extends Component
         return view('livewire.reminder-list', [
             'reminders' => $reminders
         ]);
+    }
+
+    private function checkAndSendReminders()
+    {
+        $now = Carbon::now();
+
+        // Récupérer les rappels non complétés qui n'ont pas encore été notifiés
+        // On utilise la méthode selectRaw pour filtrer directement dans la requête SQL
+        // pour optimiser les performances
+        $remindersToCheck = Reminder::with(['user'])
+            ->where('is_completed', false)
+            ->whereNotNull('reminder_date')
+            ->whereNotNull('reminder_time')
+            ->whereNull('email_sent_at') // N'envoyer l'email que si ce n'a pas déjà été fait
+            ->get();
+
+        foreach ($remindersToCheck as $reminder) {
+            try {
+                // Vérifier que les dates et heures sont valides
+                if (!$reminder->reminder_date || !$reminder->reminder_time) {
+                    continue; // Passer au rappel suivant s'il n'y a pas de date ou d'heure
+                }
+
+                // Gestion correcte des dates/temps qui pourraient être des objets Carbon ou des chaînes
+                $date = $reminder->reminder_date;
+                $time = $reminder->reminder_time;
+
+                // Vérifier et formater correctement la date et l'heure
+                if ($date instanceof Carbon) {
+                    $date = $date->format('Y-m-d');
+                }
+                if ($time instanceof Carbon) {
+                    $time = $time->format('H:i:s');
+                }
+
+                // S'assurer que les formats sont corrects
+                $date = trim($date);
+                $time = trim($time);
+
+                // Créer la date et l'heure du rappel
+                $reminderDateTime = Carbon::parse("{$date} {$time}");
+
+                // Calculer la différence en minutes entre maintenant et le rappel
+                // Si diffInMinutes est positif, alors le rappel est dans le futur
+                // Si diffInMinutes est négatif, alors le rappel est dans le passé
+                $diffInMinutes = $now->diffInMinutes($reminderDateTime, false);
+
+                // Envoyer un email 10 minutes avant l'heure du rappel
+                // Cela signifie que quand il reste environ 10 minutes avant le rappel, diffInMinutes ≈ 10
+                if ($diffInMinutes <= 10 && $diffInMinutes > 0) {
+                    if ($reminder->user && $reminder->user->email) {
+                        Mail::to($reminder->user->email)->send(new ReminderNotification($reminder));
+
+                        // Marquer le rappel comme ayant été notifié pour éviter les emails en double
+                        $reminder->update(['email_sent_at' => now()]);
+
+                        // Optionnel: Ajouter un log pour le suivi
+                        \Log::info("Email envoyé pour le rappel ID: {$reminder->id} à l'utilisateur: {$reminder->user->email}");
+                    }
+                }
+            } catch (\Exception $e) {
+                // En cas d'erreur, enregistrer l'erreur et continuer avec le prochain rappel
+                \Log::error("Erreur lors de l'envoi de l'email pour le rappel ID: {$reminder->id}", [
+                    'error' => $e->getMessage()
+                ]);
+                continue;
+            }
+        }
     }
 
     public function updateReminders()
@@ -129,7 +275,7 @@ class ReminderList extends Component
         $this->editingReminderTitle = $reminder->title;
         $this->editingReminderMessage = $reminder->message;
         $this->editingReminderDate = $reminder->reminder_date ? $reminder->reminder_date->format('Y-m-d') : null;
-        $this->editingReminderTime = $reminder->reminder_time ? $reminder->reminder_time->format('H:i') : null;
+        $this->editingReminderTime = $reminder->reminder_time ? $reminder->reminder_time : null;
         $this->editingReminderFileId = $reminder->file_id;
         $this->editingReminderFolderId = $reminder->folder_id;
 
@@ -143,7 +289,7 @@ class ReminderList extends Component
                 'title' => $reminder->title,
                 'message' => $reminder->message,
                 'reminder_date' => $reminder->reminder_date ? $reminder->reminder_date->format('Y-m-d') : null,
-                'reminder_time' => $reminder->reminder_time ? $reminder->reminder_time->format('H:i') : null,
+                'reminder_time' => $reminder->reminder_time ? $reminder->reminder_time : null,
                 'file_id' => $reminder->file_id,
                 'folder_id' => $reminder->folder_id,
                 'is_active' => $reminder->is_active,
