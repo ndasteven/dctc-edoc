@@ -73,6 +73,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Titre</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Message</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Date / Heure</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Cible</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Statut</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
                         </tr>
@@ -108,7 +109,62 @@
                                         {{ $reminder->time_remaining['status'] }}
                                     </div>
                                 </td>
-
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        @if ($reminder->folder_id)
+                                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
+                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor" viewBox="0 0 20 18">
+                                                <path
+                                                    d="M14 2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V2Z" />
+                                            </svg>
+                                            <button type="button" data-tooltip-target="folder-path-{{ $reminder->id }}"
+                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                <svg class="w-5 h-5" aria-hidden="true"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </button>
+                                            <div id="folder-path-{{ $reminder->id }}" role="tooltip"
+                                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                                <div class="font-semibold">Dossier:</div>
+                                                {{ $this->getFolderPath($reminder->folder) }}
+                                                <div class="tooltip-arrow" data-popper-arrow></div>
+                                            </div>
+                                        @else
+                                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
+                                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor" viewBox="0 0 20 16">
+                                                <path
+                                                    d="M19 4h-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5a1 1 0 0 1 2 0Z" />
+                                            </svg>
+                                            <button type="button"
+                                                data-tooltip-target="document-path-{{ $reminder->id }}"
+                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                <svg class="w-5 h-5" aria-hidden="true"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </button>
+                                            <div id="document-path-{{ $reminder->id }}" role="tooltip"
+                                                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                                <div class="font-semibold">Fichier:</div>
+                                                {{ $this->getDocumentPath($reminder->document) }}
+                                                <div class="tooltip-arrow" data-popper-arrow></div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4">
                                     @if ($reminder->is_completed)
                                         <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
