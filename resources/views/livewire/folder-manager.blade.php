@@ -1,5 +1,5 @@
 <div class="mx-auto">
-    
+
     <!-- Drag Bubble -->
     <div id="drag-bubble"
         class="hidden absolute z-50 pointer-events-none bg-white bg-opacity-75 text-blue-600 border-2 border-dashed border-blue-600 rounded-md px-3 py-1 font-bold text-sm">
@@ -7,8 +7,14 @@
 
     <div class="">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                @php
+                    $createPermission = $parentId ? \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), $parentId) : null;
+                    $canCreate = !$parentId || ($createPermission && $createPermission !== 'L');
+                @endphp
+            @if($canCreate)   
             <div class="bg-gray overflow-hidden shadow-xl sm:rounded-lg flex items-center space-x-4 p-4">
                 <p class="text-lg font-medium text-gray-900 dark:text-white flex-auto">Création nouveau dossier</p>
+
                 <button data-modal-target="crud-modal" data-modal-toggle="crud-modal" type="button" id="createDoc"
                     class="px-5 py-2.5 text-sm font-medium text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true"
@@ -20,7 +26,9 @@
                     </svg>
                     Nouveau Dossier
                 </button>
+                
             </div>
+            @endif
 
             @include('propriete')
             @include('createFolder')
@@ -63,7 +71,7 @@
                         @endforeach
                     </small>
                 @endif
-                
+
 
                 <span wire:loading wire:target='navigateToFolder, resetFolderPath'>
                     <span role="status">
@@ -98,7 +106,10 @@
         </div>
         {{-- permet d'afficher le bouton pour uploader un fichier dans le cas ou nous trouvons dans un dossier --}}
         @if (count($breadcrumbPath) >= 1)
-            
+            @php
+                $parentPermission = \App\Helpers\AccessHelper::getPermissionFor(auth()->id(), $parentId);
+            @endphp
+            @if ($parentPermission !== 'L')
             <div class="flex justify-end p-3">
                 <button data-modal-target="uploadFile" data-modal-toggle="uploadFile" type="button"
                     wire:click="infoIdFocus"
@@ -116,6 +127,7 @@
                     Ajouter Fichier
                 </button>
             </div>
+            @endif
         @endif
 
 

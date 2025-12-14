@@ -1,30 +1,47 @@
 <div>
-    <div class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center">
+    <div class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center min-h-screen">
         <!-- Conteneur principal -->
         <div
-            class="relative w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
+            class="relative w-full h-screen bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 flex flex-col">
             <!-- En-tête -->
-            {{-- <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
-                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
-                <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
-                    <div class="inline-flex space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span>
-                            Retour
-                        </span>
-                    </div>
-                </button>
-                 <button id="toggle-aside"
-                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
-                    ⬅️ Masquer infos
-                </button>
-            </header> --}}
-            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg">
-                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
 
+            <header class="flex items-center justify-between px-6 py-3 bg-blue-600 rounded-t-lg flex-shrink-0 overflow-x-hidden overflow-x-scroll">
+                <h1 class="text-lg font-semibold text-white">Aperçu du document</h1>
+                <!-- Affichage du chemin d'accès au fichier -->
+            @if (!empty($breadcrumbPath))
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <small class="breadcrumb inline-flex items-center">
+                        <span class="inline-flex items-center text-gray-600 dark:text-white">Chemin :
+                            
+                            @foreach ($breadcrumbPath as $index => $item)
+                                @if ($index > 0)
+                                    <svg class="w-5 h-5 text-gray-500 dark:text-white mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4" />
+                                    </svg>
+                                @endif
+                                @if (isset($item['id']) && str_starts_with($item['id'], 'service-'))
+                                    <span class="text-blue-600 dark:text-blue-400">
+                                        {{ $item['name'] }}
+                                    </span>
+                                @else
+                                    <a href="{{ route('folders.show', $item['id']) }}"
+                                        class="text-blue-600 hover:underline dark:text-blue-400">
+                                        {{ $item['name'] }}
+                                    </a>
+                                @endif
+                            @endforeach
+                            <!-- Flèche de séparation avant le nom du fichier -->
+                            <svg class="w-5 h-5 text-gray-500 dark:text-white mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4" />
+                            </svg>
+                            <!-- Nom du fichier courant -->
+                            <span class="text-gray-800 font-medium dark:text-white">
+                                {{ $document->nom ?? $document->filename }}
+                            </span>
+                        </span>
+                    </small>
+                </div>
+            @endif
                 <div class="flex items-center space-x-4">
                     <button onclick="window.history.back()" class="text-white hover:text-gray-300 focus:outline-none">
                         <div class="inline-flex space-x-2 items-center">
@@ -44,28 +61,20 @@
                 </div>
             </header>
 
+            
+
             <!-- Contenu principal -->
-            <div class="grid grid-cols-1 md:grid-cols-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 flex-1 overflow-hidden">
                 <!-- Aperçu du document (colonne principale) -->
-                <div id="main-viewer" class="col-span-3">
+                <div id="main-viewer" class="col-span-3 flex flex-col overflow-hidden">
                     @php
-                        $isPDF = in_array($document->type, [
-                            'pdf',
-                            'PDF',
-                            'txt',
-                            'png',
-                            'jpeg',
-                            'PNG',
-                            'JPEG',
-                            'jpg',
-                            'JPG',
-                        ]);
+                        $isPDF = in_array($document->type, ['pdf', 'PDF']);
                         $isImageOrText = in_array($document->type, ['txt', 'png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']);
                         $readOnly = $permission === 'L';
                     @endphp
                     @if ($isPDF && $readOnly)
                         {{-- 📄 PDF Lecture seule avec navigation personnalisée --}}
-                        <div class="flex justify-end items-center space-x-2 mb-2">
+                        <div class="flex justify-end items-center space-x-2 mb-2 px-4 pt-2 flex-shrink-0">
                             <button id="prev-page"
                                 class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">◀
                                 Précédent</button>
@@ -79,7 +88,7 @@
                                 Zoom +</button>
                         </div>
 
-                        <div id="pdf-container" class="w-full h-full overflow-auto bg-gray-100 p-4 text-center">
+                        <div id="pdf-container" class="flex-1 overflow-auto bg-gray-100 p-4 text-center">
                             <canvas id="pdf-canvas" class="mx-auto shadow-md rounded"></canvas>
                         </div>
 
@@ -166,32 +175,71 @@
                                 });
                             });
                         </script>
+                        {{-- @elseif ($isPDF || $isImageOrText) --}}
+                        {{-- 🖼️ PDF normal, TXT ou images - AVEC HAUTEUR COMPLETE --}}
+                        {{-- <iframe src="{{ asset('storage/' . $document->filename) }}" class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0"></iframe> --}}
                     @elseif ($isPDF || $isImageOrText)
-                        {{-- 🖼️ PDF normal, TXT ou images --}}
-                        <iframe src="{{ asset('storage/' . $document->filename) }}"class="w-full h-full border-none rounded-bl-lg"></iframe>
+                        {{-- 🖼️ PDF normal, TXT ou images - AVEC PROTECTION si lecture seule --}}
+                        @if ($readOnly && in_array($document->type, ['png', 'jpeg', 'PNG', 'JPEG', 'jpg', 'JPG']))
+                            {{-- 🔒 Images en mode lecture seule avec protection --}}
+                            <div class="flex-1 overflow-auto bg-gray-100 p-4 text-center">
+                                <img id="protected-image" src="{{ asset('storage/' . $document->filename) }}"
+                                    class="mx-auto shadow-md rounded max-w-full h-auto" alt="Document protégé">
+                            </div>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    const img = document.getElementById('protected-image');
+
+                                    // Même protection que pour les PDFs
+                                    img.addEventListener('contextmenu', function(e) {
+                                        e.preventDefault();
+                                    });
+
+                                    img.addEventListener('dragstart', function(e) {
+                                        e.preventDefault();
+                                    });
+
+                                    // Désactiver la sélection
+                                    img.style.userSelect = 'none';
+                                    img.style.webkitUserSelect = 'none';
+                                    img.style.mozUserSelect = 'none';
+                                    img.style.msUserSelect = 'none';
+
+                                    // Désactiver le drag
+                                    img.style.webkitUserDrag = 'none';
+                                    img.style.mozUserDrag = 'none';
+                                    img.style.userDrag = 'none';
+
+                                    // Bloquer les tentatives de sauvegarde
+                                    img.addEventListener('mousedown', function(e) {
+                                        if (e.button === 0) { // Clic gauche
+                                            e.preventDefault();
+                                        }
+                                    });
+                                });
+                            </script>
+                        @else
+                            {{-- 🖼️ PDF normal, TXT ou images sans protection --}}
+                            <iframe src="{{ asset('storage/' . $document->filename) }}"
+                                class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0"></iframe>
+                        @endif
                     @elseif ($isOfficeDocument)
-                        {{-- 📁 Documents Office affichés depuis /archives --}}
+                        {{-- 📁 Documents Office affichés depuis /archives - AVEC HAUTEUR COMPLETE --}}
                         <iframe src="{{ asset('storage/archives/' . $nom) }}"
-                            class="w-full h-full border-none rounded-bl-lg"> 
+                            class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0">
                         </iframe>
                     @else
                         {{-- ❌ Format non reconnu --}}
                         <div
-                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700">
+                            class="w-full h-full bg-yellow-100 p-6 rounded-bl-lg flex items-center justify-center text-gray-700 flex-1">
                             <p>Ce format de fichier n'est pas prévisualisable directement. <br> Téléchargez-le ou
                                 ouvrez-le dans une application compatible.</p>
                         </div>
                     @endif
                 </div>
-
-                <!-- Informations supplémentaires (colonne secondaire) -->
-                {{-- <button id="toggle-aside"
-                    class="absolute top-4 right-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded shadow">
-                    ⬅️ Masquer infos
-                </button> --}}
-
                 <aside id="doc-aside"
-                    class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3">
+                    class="bg-gray-50 p-6 dark:bg-gray-700 rounded-br-lg border-l border-gray-200 dark:border-gray-600 space-y-3 overflow-y-auto">
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Informations sur le document</h2>
                     <ul class="mt-4 space-y-2 text-gray-600 dark:text-gray-400">
                         <li><strong>Titre :</strong> {{ $document->nom }}</li>
@@ -220,10 +268,10 @@
                                     <span class="text-2xl">{{ $this->getPermissionIcon() }}</span>
                                     <span
                                         class="px-3 py-1 text-xs font-medium rounded-full
-                    @if ($permission === 'LE') bg-green-100 text-green-800
-                    @elseif($permission === 'E') bg-blue-100 text-blue-800
-                    @elseif($permission === 'L') bg-yellow-100 text-yellow-800
-                    @else bg-red-100 text-red-800 @endif">
+                                        @if ($permission === 'LE') bg-green-100 text-green-800
+                                        @elseif($permission === 'E') bg-blue-100 text-blue-800
+                                        @elseif($permission === 'L') bg-yellow-100 text-yellow-800
+                                        @else bg-red-100 text-red-800 @endif">
                                         {{ $this->getPermissionLabel() }}
                                     </span>
                                 </div>
@@ -269,9 +317,9 @@
                             <div class="pdf-content mb-6">
                                 <div
                                     class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <div class="text-4xl mb-4">📄</div>
+                                    {{-- <div class="text-4xl mb-4">📄</div>
                                     <p class="text-gray-600">Visualiseur PDF</p>
-                                    <p class="text-sm text-gray-500 mt-2">Le contenu du PDF sera affiché ici</p>
+                                    <p class="text-sm text-gray-500 mt-2">Le contenu du PDF sera affiché ici</p> --}}
                                 </div>
                             </div>
 
@@ -364,16 +412,10 @@
                         @endif
 
                     </div>
-
-
-
-
                 </aside>
             </div>
         </div>
     </div>
-    <!-- PDF.js viewer (minimal) -->
-    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script> --}}
 
     <script>
         (function() {
@@ -384,7 +426,7 @@
 
             if (!IS_READONLY) return;
 
-            console.log('[🔒] Mode lecture seule activé');
+            alert('[🔒] Mode lecture seule activé');
 
             // 🔒 Blocage clic droit global
             document.addEventListener('contextmenu', function(e) {
@@ -426,7 +468,7 @@
                     @media print {
                         body * { display: none !important; }
                         body::after {
-                            content: "Impression désactivée - Document protégé";
+                            content: "Impression désactivée - Document protégé, vous êtes en mode lecture seul:\ 🔒 Blocage impression veillez bien contacte votre Administrateur";
                             display: block;
                             font-size: 20px;
                             text-align: center;
@@ -434,6 +476,7 @@
                         }
                     }
                 `;
+
             document.head.appendChild(style);
 
             // 🔒 Blocage copier
@@ -475,51 +518,7 @@
 
         })();
     </script>
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const aside = document.getElementById('doc-aside');
-            const toggleBtn = document.getElementById('toggle-aside');
 
-            let isVisible = true;
-
-            toggleBtn.addEventListener('click', () => {
-                isVisible = !isVisible;
-
-                if (isVisible) {
-                    aside.classList.remove('hidden');
-                    toggleBtn.innerHTML = '⬅️ Masquer infos';
-                } else {
-                    aside.classList.add('hidden');
-                    toggleBtn.innerHTML = '➡️ Afficher infos';
-                }
-            });
-        });
-    </script> --}}
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const aside = document.getElementById('doc-aside');
-            const mainViewer = document.getElementById('main-viewer');
-            const toggleBtn = document.getElementById('toggle-aside');
-
-            let isVisible = true;
-
-            toggleBtn.addEventListener('click', () => {
-                isVisible = !isVisible;
-
-                if (isVisible) {
-                    aside.classList.remove('hidden');
-                    mainViewer.classList.remove('col-span-4');
-                    mainViewer.classList.add('col-span-3');
-                    toggleBtn.innerHTML = '⬅️ Masquer infos';
-                } else {
-                    aside.classList.add('hidden');
-                    mainViewer.classList.remove('col-span-3');
-                    mainViewer.classList.add('col-span-4');
-                    toggleBtn.innerHTML = '➡️ Afficher infos';
-                }
-            });
-        });
-    </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toggleBtn = document.getElementById('toggle-aside');
@@ -545,7 +544,5 @@
             });
         });
     </script>
-
-
 
 </div>
