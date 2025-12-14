@@ -49,7 +49,7 @@ class Reminder extends Model
     public function getIsCompletedAttribute()
     {
         // Accéder directement à la propriété ou la colonne de la base de données
-        return (bool) $this->attributes['is_completed'];
+        return (bool) ($this->attributes['is_completed'] ?? false);
     }
 
     /**

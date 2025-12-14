@@ -21,6 +21,8 @@ class ReminderNotification extends Mailable
 
     public function __construct($reminder)
     {
+        // Charger les relations nécessaires pour le template de mail
+        $reminder->load(['document', 'folder', 'document.folder']);
         $this->reminder = $reminder;
     }
 
@@ -57,6 +59,7 @@ class ReminderNotification extends Mailable
                 'title' => $this->reminder->title,
                 'message' => $this->reminder->message,
                 'reminderDate' => $formattedDateTime,
+                'reminder' => $this->reminder,
             ],
         );
     }

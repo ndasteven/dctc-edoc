@@ -98,6 +98,7 @@
         </div>
         {{-- permet d'afficher le bouton pour uploader un fichier dans le cas ou nous trouvons dans un dossier --}}
         @if (count($breadcrumbPath) >= 1)
+            
             <div class="flex justify-end p-3">
                 <button data-modal-target="uploadFile" data-modal-toggle="uploadFile" type="button"
                     wire:click="infoIdFocus"
