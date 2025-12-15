@@ -3,6 +3,9 @@
 
 Ceci est un rappel pour le {{ $reminder->document ? 'fichier' : 'dossier' }} : **{{ $reminder->document ? $reminder->document->nom : $reminder->folder->name }}**
 
+**Message :**
+{{ $message }}
+
 @if($reminder->document)
 @php
     $document = $reminder->document;
@@ -23,8 +26,7 @@ Ceci est un rappel pour le {{ $reminder->document ? 'fichier' : 'dossier' }} : *
 
 **Date et heure :** {{ $reminderDate }}
 
-**Message :**
-{{ $message }}
+
 
 <x-slot:subcopy>
 <x-mail::button :url="$reminder->document ? route('documents.show', $reminder->document->id) : route('folders.show', $reminder->folder->id)">

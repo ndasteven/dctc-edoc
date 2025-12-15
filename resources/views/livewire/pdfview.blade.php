@@ -76,7 +76,7 @@
                         {{-- 📄 PDF avec affichage vertical continu via PDF.js pour tous --}}
                         <div class="flex justify-end items-center space-x-2 mb-2 px-4 pt-2 flex-shrink-0">
                             <button
-                                        class="px-3 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded shadow-lg md:hidden text-sm"
+                                        class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm md:hidden"
                                         type="button"
                                         data-drawer-target="doc-aside"
                                         data-drawer-toggle="doc-aside"
@@ -84,6 +84,7 @@
                                     >
                                         📋 Infos
                                     </button>
+                            <button id="search-btn" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">🔍 Recherche</button>
                             <button id="zoom-out" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">➖
                                 Zoom -</button>
                             <button id="zoom-in" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">➕
@@ -172,6 +173,225 @@
                                 window.addEventListener('resize', () => {
                                     renderAllPages();
                                 });
+
+                                // Fonction de recherche dans le document PDF
+                                let searchContainer = null;
+                                let searchInput = null;
+                                let searchResults = null;
+                                let currentMatchIndex = -1;
+                                let allMatches = [];
+
+                                // Créer l'interface de recherche
+                                function createSearchInterface() {
+                                    // Conteneur de recherche
+                                    searchContainer = document.createElement('div');
+                                    searchContainer.id = 'search-container';
+                                    searchContainer.style.cssText = `
+                                        position: fixed;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        background: white;
+                                        padding: 20px;
+                                        border: 1px solid #ccc;
+                                        border-radius: 5px;
+                                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                        z-index: 1000;
+                                        display: none;
+                                        min-width: 400px;
+                                    `;
+
+                                    // Input de recherche
+                                    searchInput = document.createElement('input');
+                                    searchInput.type = 'text';
+                                    searchInput.placeholder = 'Rechercher dans le document...';
+                                    searchInput.style.cssText = `
+                                        width: calc(100% - 20px);
+                                        padding: 10px;
+                                        margin-bottom: 10px;
+                                        border: 1px solid #ccc;
+                                        border-radius: 3px;
+                                    `;
+
+                                    // Boutons de navigation
+                                    const navigationDiv = document.createElement('div');
+                                    navigationDiv.style.cssText = `
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                    `;
+
+                                    const prevBtn = document.createElement('button');
+                                    prevBtn.textContent = 'Précédent';
+                                    prevBtn.style.cssText = `
+                                        padding: 5px 10px;
+                                        margin-right: 10px;
+                                        background: #f0f0f0;
+                                        border: 1px solid #ccc;
+                                        border-radius: 3px;
+                                        cursor: pointer;
+                                    `;
+
+                                    const nextBtn = document.createElement('button');
+                                    nextBtn.textContent = 'Suivant';
+                                    nextBtn.style.cssText = `
+                                        padding: 5px 10px;
+                                        margin-right: 10px;
+                                        background: #f0f0f0;
+                                        border: 1px solid #ccc;
+                                        border-radius: 3px;
+                                        cursor: pointer;
+                                    `;
+
+                                    const closeBtn = document.createElement('button');
+                                    closeBtn.textContent = 'Fermer';
+                                    closeBtn.style.cssText = `
+                                        padding: 5px 10px;
+                                        background: #e74c3c;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 3px;
+                                        cursor: pointer;
+                                    `;
+
+                                    // Affichage des résultats
+                                    searchResults = document.createElement('div');
+                                    searchResults.style.cssText = `
+                                        font-size: 12px;
+                                        color: #666;
+                                        margin-top: 10px;
+                                        text-align: center;
+                                    `;
+
+                                    // Événements
+                                    prevBtn.addEventListener('click', () => {
+                                        if (allMatches.length > 0) {
+                                            currentMatchIndex = (currentMatchIndex - 1 + allMatches.length) % allMatches.length;
+                                            scrollToMatch(currentMatchIndex);
+                                        }
+                                    });
+
+                                    nextBtn.addEventListener('click', () => {
+                                        if (allMatches.length > 0) {
+                                            currentMatchIndex = (currentMatchIndex + 1) % allMatches.length;
+                                            scrollToMatch(currentMatchIndex);
+                                        }
+                                    });
+
+                                    closeBtn.addEventListener('click', () => {
+                                        searchContainer.style.display = 'none';
+                                    });
+
+                                    searchInput.addEventListener('keyup', (e) => {
+                                        if (e.key === 'Enter') {
+                                            performSearch();
+                                        }
+                                    });
+
+                                    // Construction de l'interface
+                                    navigationDiv.appendChild(prevBtn);
+                                    navigationDiv.appendChild(nextBtn);
+                                    navigationDiv.appendChild(closeBtn);
+
+                                    searchContainer.appendChild(searchInput);
+                                    searchContainer.appendChild(navigationDiv);
+                                    searchContainer.appendChild(searchResults);
+                                    document.body.appendChild(searchContainer);
+
+                                    // Bouton de recherche principal
+                                    const searchBtn = document.getElementById('search-btn');
+                                    searchBtn.addEventListener('click', () => {
+                                        searchContainer.style.display = searchContainer.style.display === 'block' ? 'none' : 'block';
+                                        if (searchContainer.style.display === 'block') {
+                                            searchInput.focus();
+                                        }
+                                    });
+                                }
+
+                                // Fonction pour effectuer la recherche
+                                async function performSearch() {
+                                    if (!pdfDoc) return;
+
+                                    const searchTerm = searchInput.value.trim();
+                                    if (!searchTerm) {
+                                        searchResults.textContent = '';
+                                        return;
+                                    }
+
+                                    allMatches = [];
+                                    currentMatchIndex = -1;
+
+                                    // Effectuer la recherche dans chaque page
+                                    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                                        const page = await pdfDoc.getPage(pageNum);
+                                        const textContent = await page.getTextContent();
+                                        const items = textContent.items;
+                                        let allText = '';
+
+                                        for (let i = 0; i < items.length; i++) {
+                                            allText += items[i].str;
+                                        }
+
+                                        // Chercher le terme dans le texte
+                                        const regex = new RegExp(searchTerm, 'gi');
+                                        let match;
+                                        while ((match = regex.exec(allText)) !== null) {
+                                            allMatches.push({
+                                                pageNum: pageNum,
+                                                index: match.index,
+                                                text: match[0],
+                                                originalText: allText
+                                            });
+                                        }
+                                    }
+
+                                    // Afficher les résultats
+                                    if (allMatches.length > 0) {
+                                        searchResults.textContent = `Trouvé ${allMatches.length} résultat(s)`;
+                                        currentMatchIndex = 0;
+                                        scrollToMatch(0);
+                                    } else {
+                                        searchResults.textContent = 'Aucun résultat trouvé';
+                                    }
+                                }
+
+                                // Fonction pour aller à un résultat spécifique
+                                function scrollToMatch(index) {
+                                    if (index < 0 || index >= allMatches.length) return;
+
+                                    const match = allMatches[index];
+                                    searchResults.textContent = `Résultat ${index + 1} sur ${allMatches.length}`;
+
+                                    // Trouver la page correspondante et la faire défiler
+                                    const canvas = document.querySelectorAll('#pdf-pages-container canvas')[match.pageNum - 1];
+                                    if (canvas) {
+                                        canvas.scrollIntoView({behavior: 'smooth', block: 'center'});
+
+                                        // Mise en évidence temporaire du résultat
+                                        highlightText(canvas, match);
+                                    }
+                                }
+
+                                // Fonction pour mettre en évidence un texte
+                                function highlightText(canvas, match) {
+                                    // Sauvegarder le contexte du canvas
+                                    const context = canvas.getContext('2d');
+
+                                    // Dessiner un rectangle de mise en évidence (simplifié)
+                                    context.fillStyle = 'rgba(255, 255, 0, 0.5)'; // Jaune transparent
+                                    context.fillRect(100, 100, 200, 30); // Position arbitraire pour démonstration
+
+                                    // Remettre à jour après un court délai
+                                    setTimeout(() => {
+                                        const newScale = (canvas.parentElement.clientWidth - 40) / canvas.width;
+                                        const newViewport = match.page.getViewport({scale: newScale * currentScale});
+                                        // Retirer temporairement la surbrillance (dans une implémentation complète, on devrait redessiner la page)
+                                        renderAllPages();
+                                    }, 2000);
+                                }
+
+                                // Initialiser l'interface de recherche
+                                createSearchInterface();
                             });
                         </script>
 
@@ -187,7 +407,7 @@
                                     document.addEventListener('DOMContentLoaded', () => {
                                         const printButton = document.createElement('button');
                                         printButton.id = 'print-pdf';
-                                        printButton.className = 'px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded';
+                                        printButton.className = 'px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm';
                                         printButton.innerHTML = '🖨️ Imprimer';
 
                                         // Ajouter le bouton avant les boutons de zoom
@@ -246,6 +466,237 @@
                                     });
                                 }
                             })();
+
+                        </script>
+
+                        <script>
+                            // Fonction de recherche dans les documents Office avec PDF.js
+                            (function() {
+                                'use strict';
+
+                                // Vérifier si nous sommes sur un document Office
+                                if (document.getElementById('pdf-container-office')) {
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        let pdfDocOffice = null;
+                                        let searchContainerOffice = null;
+                                        let searchInputOffice = null;
+                                        let searchResultsOffice = null;
+                                        let currentMatchIndexOffice = -1;
+                                        let allMatchesOffice = [];
+
+                                        // Fonction pour récupérer l'instance de PDF actuelle
+                                        function getPdfDocOffice() {
+                                            // On va chercher la variable globale ou récupérer l'instance du script principal
+                                            if (typeof pdfjsLib !== 'undefined' && document.getElementById('pdf-pages-container-office')) {
+                                                // On récupère l'URL du document
+                                                const url = "{{ asset('storage/archives/' . $nom) }}";
+                                                return pdfjsLib.getDocument(url).promise.then(pdf => {
+                                                    pdfDocOffice = pdf;
+                                                    return pdf;
+                                                });
+                                            }
+                                            return Promise.resolve(null);
+                                        }
+
+                                        // Créer l'interface de recherche pour les documents Office
+                                        function createSearchInterfaceOffice() {
+                                            // Conteneur de recherche
+                                            searchContainerOffice = document.createElement('div');
+                                            searchContainerOffice.id = 'search-container-office';
+                                            searchContainerOffice.style.cssText = `
+                                                position: fixed;
+                                                top: 50%;
+                                                left: 50%;
+                                                transform: translate(-50%, -50%);
+                                                background: white;
+                                                padding: 20px;
+                                                border: 1px solid #ccc;
+                                                border-radius: 5px;
+                                                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                                z-index: 1000;
+                                                display: none;
+                                                min-width: 400px;
+                                            `;
+
+                                            // Input de recherche
+                                            searchInputOffice = document.createElement('input');
+                                            searchInputOffice.type = 'text';
+                                            searchInputOffice.placeholder = 'Rechercher dans le document...';
+                                            searchInputOffice.style.cssText = `
+                                                width: calc(100% - 20px);
+                                                padding: 10px;
+                                                margin-bottom: 10px;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                            `;
+
+                                            // Boutons de navigation
+                                            const navigationDiv = document.createElement('div');
+                                            navigationDiv.style.cssText = `
+                                                display: flex;
+                                                justify-content: space-between;
+                                                align-items: center;
+                                            `;
+
+                                            const prevBtn = document.createElement('button');
+                                            prevBtn.textContent = 'Précédent';
+                                            prevBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                margin-right: 10px;
+                                                background: #f0f0f0;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            const nextBtn = document.createElement('button');
+                                            nextBtn.textContent = 'Suivant';
+                                            nextBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                margin-right: 10px;
+                                                background: #f0f0f0;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            const closeBtn = document.createElement('button');
+                                            closeBtn.textContent = 'Fermer';
+                                            closeBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                background: #e74c3c;
+                                                color: white;
+                                                border: none;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            // Affichage des résultats
+                                            searchResultsOffice = document.createElement('div');
+                                            searchResultsOffice.style.cssText = `
+                                                font-size: 12px;
+                                                color: #666;
+                                                margin-top: 10px;
+                                                text-align: center;
+                                            `;
+
+                                            // Événements
+                                            prevBtn.addEventListener('click', () => {
+                                                if (allMatchesOffice.length > 0) {
+                                                    currentMatchIndexOffice = (currentMatchIndexOffice - 1 + allMatchesOffice.length) % allMatchesOffice.length;
+                                                    scrollToMatchOffice(currentMatchIndexOffice);
+                                                }
+                                            });
+
+                                            nextBtn.addEventListener('click', () => {
+                                                if (allMatchesOffice.length > 0) {
+                                                    currentMatchIndexOffice = (currentMatchIndexOffice + 1) % allMatchesOffice.length;
+                                                    scrollToMatchOffice(currentMatchIndexOffice);
+                                                }
+                                            });
+
+                                            closeBtn.addEventListener('click', () => {
+                                                searchContainerOffice.style.display = 'none';
+                                            });
+
+                                            searchInputOffice.addEventListener('keyup', (e) => {
+                                                if (e.key === 'Enter') {
+                                                    performSearchOffice();
+                                                }
+                                            });
+
+                                            // Construction de l'interface
+                                            navigationDiv.appendChild(prevBtn);
+                                            navigationDiv.appendChild(nextBtn);
+                                            navigationDiv.appendChild(closeBtn);
+
+                                            searchContainerOffice.appendChild(searchInputOffice);
+                                            searchContainerOffice.appendChild(navigationDiv);
+                                            searchContainerOffice.appendChild(searchResultsOffice);
+                                            document.body.appendChild(searchContainerOffice);
+
+                                            // Bouton de recherche principal
+                                            const searchBtn = document.getElementById('search-btn-office');
+                                            if (searchBtn) {
+                                                searchBtn.addEventListener('click', () => {
+                                                    searchContainerOffice.style.display = searchContainerOffice.style.display === 'block' ? 'none' : 'block';
+                                                    if (searchContainerOffice.style.display === 'block') {
+                                                        searchInputOffice.focus();
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        // Fonction pour effectuer la recherche dans les documents Office
+                                        async function performSearchOffice() {
+                                            if (!pdfDocOffice) {
+                                                // Essayer d'obtenir l'instance du PDF
+                                                await getPdfDocOffice();
+                                                if (!pdfDocOffice) return;
+                                            }
+
+                                            const searchTerm = searchInputOffice.value.trim();
+                                            if (!searchTerm) {
+                                                searchResultsOffice.textContent = '';
+                                                return;
+                                            }
+
+                                            allMatchesOffice = [];
+                                            currentMatchIndexOffice = -1;
+
+                                            // Effectuer la recherche dans chaque page
+                                            for (let pageNum = 1; pageNum <= pdfDocOffice.numPages; pageNum++) {
+                                                const page = await pdfDocOffice.getPage(pageNum);
+                                                const textContent = await page.getTextContent();
+                                                const items = textContent.items;
+                                                let allText = '';
+
+                                                for (let i = 0; i < items.length; i++) {
+                                                    allText += items[i].str;
+                                                }
+
+                                                // Chercher le terme dans le texte
+                                                const regex = new RegExp(searchTerm, 'gi');
+                                                let match;
+                                                while ((match = regex.exec(allText)) !== null) {
+                                                    allMatchesOffice.push({
+                                                        pageNum: pageNum,
+                                                        index: match.index,
+                                                        text: match[0],
+                                                        originalText: allText
+                                                    });
+                                                }
+                                            }
+
+                                            // Afficher les résultats
+                                            if (allMatchesOffice.length > 0) {
+                                                searchResultsOffice.textContent = `Trouvé ${allMatchesOffice.length} résultat(s)`;
+                                                currentMatchIndexOffice = 0;
+                                                scrollToMatchOffice(0);
+                                            } else {
+                                                searchResultsOffice.textContent = 'Aucun résultat trouvé';
+                                            }
+                                        }
+
+                                        // Fonction pour aller à un résultat spécifique dans les documents Office
+                                        function scrollToMatchOffice(index) {
+                                            if (index < 0 || index >= allMatchesOffice.length) return;
+
+                                            const match = allMatchesOffice[index];
+                                            searchResultsOffice.textContent = `Résultat ${index + 1} sur ${allMatchesOffice.length}`;
+
+                                            // Trouver la page correspondante et la faire défiler
+                                            const canvas = document.querySelectorAll('#pdf-pages-container-office canvas')[match.pageNum - 1];
+                                            if (canvas) {
+                                                canvas.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                            }
+                                        }
+
+                                        // Initialiser l'interface de recherche pour les documents Office
+                                        createSearchInterfaceOffice();
+                                    });
+                                }
+                            })();
                         </script>
                     @elseif ($isPDF || $isImageOrText)
                         {{-- 🖼️ Images et fichiers texte - AVEC PROTECTION si lecture seule --}}
@@ -293,7 +744,7 @@
                             <div id="image-container" class="flex flex-col h-full">
                                 <div class="flex justify-between items-center px-4 pt-2 flex-shrink-0">
                                     <button
-                                        class="px-3 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded shadow-lg md:hidden text-sm"
+                                        class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm md:hidden"
                                         type="button"
                                         data-drawer-target="doc-aside"
                                         data-drawer-toggle="doc-aside"
@@ -396,10 +847,426 @@
                             </script>
                         @endif
                     @elseif ($isOfficeDocument)
-                        {{-- 📁 Documents Office affichés depuis /archives - AVEC HAUTEUR COMPLETE --}}
-                        <iframe src="{{ asset('storage/archives/' . $nom) }}"
-                            class="w-full h-full border-none rounded-bl-lg flex-1 min-h-0">
-                        </iframe>
+                        {{-- 📁 Documents Office affichés avec PDF.js --}}
+                        <div class="flex justify-end items-center space-x-2 mb-2 px-4 pt-2 flex-shrink-0">
+                            <button
+                                        class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm md:hidden"
+                                        type="button"
+                                        data-drawer-target="doc-aside"
+                                        data-drawer-toggle="doc-aside"
+                                        data-drawer-placement="left"
+                                    >
+                                        📋 Infos
+                                    </button>
+                            <button id="search-btn-office" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">🔍 Recherche</button>
+                            <button id="zoom-out-office" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">➖
+                                Zoom -</button>
+                            <button id="zoom-in-office" class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm">➕
+                                Zoom +</button>
+                        </div>
+
+                        <div id="pdf-container-office" class="flex-1 overflow-auto bg-gray-100 p-4">
+                            <div id="pdf-pages-container-office" class="flex flex-col items-center space-y-4"></div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const url = "{{ asset('storage/archives/' . $nom) }}";
+                                const container = document.getElementById('pdf-pages-container-office');
+                                const zoomInBtn = document.getElementById('zoom-in-office');
+                                const zoomOutBtn = document.getElementById('zoom-out-office');
+
+                                let pdfDoc = null;
+                                let currentScale = 1;
+                                const scaleStep = 0.25;
+                                const initialScale = 1.0;
+
+                                // Configuration du worker PDF.js
+                                if (typeof pdfjsLib === 'undefined') {
+                                    // Charger la bibliothèque PDF.js dynamiquement si elle n'est pas présente
+                                    const script = document.createElement('script');
+                                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                                    script.onload = () => {
+                                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                                        initializePDFViewer();
+                                    };
+                                    document.head.appendChild(script);
+                                } else {
+                                    // Si la bibliothèque est déjà chargée, initialiser directement
+                                    initializePDFViewer();
+                                }
+
+                                function initializePDFViewer() {
+                                    const renderAllPages = async () => {
+                                        try {
+                                            const pdf = await pdfjsLib.getDocument(url).promise;
+                                            pdfDoc = pdf;
+                                            const containerWidth = container.clientWidth;
+
+                                            // Effacer le contenu précédent
+                                            container.innerHTML = '';
+
+                                            // Afficher toutes les pages
+                                            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                                                const page = await pdf.getPage(pageNum);
+                                                const scale = (containerWidth - 40) / page.getViewport({scale: 1}).width;
+                                                const viewport = page.getViewport({scale: scale * currentScale});
+
+                                                // Créer un canvas pour la page
+                                                const canvas = document.createElement('canvas');
+                                                const context = canvas.getContext('2d');
+
+                                                canvas.height = viewport.height;
+                                                canvas.width = viewport.width;
+                                                canvas.className = 'shadow-md rounded bg-white';
+
+                                                // Dessiner la page
+                                                const renderContext = {
+                                                    canvasContext: context,
+                                                    viewport: viewport
+                                                };
+
+                                                await page.render(renderContext).promise;
+                                                container.appendChild(canvas);
+                                            }
+                                        } catch (err) {
+                                            container.innerHTML = `<p class="text-red-600">Erreur PDF : ${err.message}</p>`;
+                                        }
+                                    };
+
+                                    // Dessiner le PDF
+                                    pdfjsLib.getDocument(url).promise.then(pdf => {
+                                        pdfDoc = pdf;
+                                        renderAllPages();
+                                    }).catch(err => {
+                                        container.innerHTML = `<p class="text-red-600">Erreur PDF : ${err.message}</p>`;
+                                    });
+
+                                    // Contrôles de zoom
+                                    zoomInBtn.addEventListener('click', () => {
+                                        currentScale += scaleStep;
+                                        renderAllPages();
+                                    });
+
+                                    zoomOutBtn.addEventListener('click', () => {
+                                        if (currentScale > scaleStep) {
+                                            currentScale -= scaleStep;
+                                            renderAllPages();
+                                        }
+                                    });
+
+                                    // Rafraîchir l'affichage quand la fenêtre est redimensionnée
+                                    window.addEventListener('resize', () => {
+                                        renderAllPages();
+                                    });
+                                }
+                            });
+                        </script>
+
+                        <script>
+                            // Gestion de l'impression pour les documents Office avec PDF.js
+                            (function() {
+                                'use strict';
+                                const USER_PERMISSION = '{{ $permission ?? 'N' }}';
+                                const HAS_EDIT_PERMISSION = USER_PERMISSION === 'E' || USER_PERMISSION === 'LE';
+
+                                // Ajouter le bouton d'impression si l'utilisateur a les permissions E/LE
+                                if (HAS_EDIT_PERMISSION) {
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        const printButton = document.createElement('button');
+                                        printButton.id = 'print-pdf-office';
+                                        printButton.className = 'px-3 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm';
+                                        printButton.innerHTML = '🖨️ Imprimer';
+
+                                        // Ajouter le bouton avant les boutons de zoom
+                                        const buttonContainer = document.querySelector('.flex.justify-end.items-center.space-x-2.mb-2.px-4.pt-2.flex-shrink-0');
+                                        const zoomOutBtn = document.getElementById('zoom-out-office');
+
+                                        if (buttonContainer && zoomOutBtn) {
+                                            buttonContainer.insertBefore(printButton, zoomOutBtn);
+                                        }
+
+                                        // Fonction d'impression pour les PDFs rendus avec PDF.js
+                                        printButton.addEventListener('click', () => {
+                                            // Créer une fenêtre d'impression avec les images des pages
+                                            const printWindow = window.open('', '_blank');
+                                            const container = document.getElementById('pdf-pages-container-office');
+                                            const canvases = container.querySelectorAll('canvas');
+
+                                            let printContent = '<html><head><title>Impression PDF</title>';
+                                            printContent += '<style>body { margin: 0; padding: 20px; } img { width: 100%; margin-bottom: 20px; }</style>';
+                                            printContent += '</head><body>';
+
+                                            canvases.forEach(canvas => {
+                                                printContent += `<img src="${canvas.toDataURL()}" />`;
+                                            });
+
+                                            printContent += '</body></html>';
+
+                                            printWindow.document.write(printContent);
+                                            printWindow.document.close();
+                                            printWindow.focus();
+
+                                            // Attendre que le contenu soit chargé avant d'imprimer
+                                            setTimeout(() => {
+                                                printWindow.print();
+                                                printWindow.close();
+                                            }, 500);
+                                        });
+                                    });
+                                }
+
+                                const IS_READONLY = USER_PERMISSION === 'L';
+
+                                // Ajouter les protections pour les utilisateurs en lecture seule
+                                if (IS_READONLY) {
+                                    // Bloquer certaines fonctionnalités pour les PDFs
+                                    document.addEventListener('contextmenu', function(e) {
+                                        if (e.target.tagName === 'CANVAS') {
+                                            e.preventDefault();
+                                        }
+                                    });
+
+                                    document.addEventListener('dragstart', function(e) {
+                                        if (e.target.tagName === 'CANVAS') {
+                                            e.preventDefault();
+                                        }
+                                    });
+                                }
+                            })();
+
+                        </script>
+
+                        <script>
+                            // Fonction de recherche dans les documents Office avec PDF.js
+                            (function() {
+                                'use strict';
+
+                                // Vérifier si nous sommes sur un document Office
+                                if (document.getElementById('pdf-container-office')) {
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        let pdfDocOffice = null;
+                                        let searchContainerOffice = null;
+                                        let searchInputOffice = null;
+                                        let searchResultsOffice = null;
+                                        let currentMatchIndexOffice = -1;
+                                        let allMatchesOffice = [];
+
+                                        // Fonction pour récupérer l'instance de PDF actuelle
+                                        function getPdfDocOffice() {
+                                            // On va chercher la variable globale ou récupérer l'instance du script principal
+                                            if (typeof pdfjsLib !== 'undefined' && document.getElementById('pdf-pages-container-office')) {
+                                                // On récupère l'URL du document
+                                                const url = "{{ asset('storage/archives/' . $nom) }}";
+                                                return pdfjsLib.getDocument(url).promise.then(pdf => {
+                                                    pdfDocOffice = pdf;
+                                                    return pdf;
+                                                });
+                                            }
+                                            return Promise.resolve(null);
+                                        }
+
+                                        // Créer l'interface de recherche pour les documents Office
+                                        function createSearchInterfaceOffice() {
+                                            // Conteneur de recherche
+                                            searchContainerOffice = document.createElement('div');
+                                            searchContainerOffice.id = 'search-container-office';
+                                            searchContainerOffice.style.cssText = `
+                                                position: fixed;
+                                                top: 50%;
+                                                left: 50%;
+                                                transform: translate(-50%, -50%);
+                                                background: white;
+                                                padding: 20px;
+                                                border: 1px solid #ccc;
+                                                border-radius: 5px;
+                                                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                                z-index: 1000;
+                                                display: none;
+                                                min-width: 400px;
+                                            `;
+
+                                            // Input de recherche
+                                            searchInputOffice = document.createElement('input');
+                                            searchInputOffice.type = 'text';
+                                            searchInputOffice.placeholder = 'Rechercher dans le document...';
+                                            searchInputOffice.style.cssText = `
+                                                width: calc(100% - 20px);
+                                                padding: 10px;
+                                                margin-bottom: 10px;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                            `;
+
+                                            // Boutons de navigation
+                                            const navigationDiv = document.createElement('div');
+                                            navigationDiv.style.cssText = `
+                                                display: flex;
+                                                justify-content: space-between;
+                                                align-items: center;
+                                            `;
+
+                                            const prevBtn = document.createElement('button');
+                                            prevBtn.textContent = 'Précédent';
+                                            prevBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                margin-right: 10px;
+                                                background: #f0f0f0;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            const nextBtn = document.createElement('button');
+                                            nextBtn.textContent = 'Suivant';
+                                            nextBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                margin-right: 10px;
+                                                background: #f0f0f0;
+                                                border: 1px solid #ccc;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            const closeBtn = document.createElement('button');
+                                            closeBtn.textContent = 'Fermer';
+                                            closeBtn.style.cssText = `
+                                                padding: 5px 10px;
+                                                background: #e74c3c;
+                                                color: white;
+                                                border: none;
+                                                border-radius: 3px;
+                                                cursor: pointer;
+                                            `;
+
+                                            // Affichage des résultats
+                                            searchResultsOffice = document.createElement('div');
+                                            searchResultsOffice.style.cssText = `
+                                                font-size: 12px;
+                                                color: #666;
+                                                margin-top: 10px;
+                                                text-align: center;
+                                            `;
+
+                                            // Événements
+                                            prevBtn.addEventListener('click', () => {
+                                                if (allMatchesOffice.length > 0) {
+                                                    currentMatchIndexOffice = (currentMatchIndexOffice - 1 + allMatchesOffice.length) % allMatchesOffice.length;
+                                                    scrollToMatchOffice(currentMatchIndexOffice);
+                                                }
+                                            });
+
+                                            nextBtn.addEventListener('click', () => {
+                                                if (allMatchesOffice.length > 0) {
+                                                    currentMatchIndexOffice = (currentMatchIndexOffice + 1) % allMatchesOffice.length;
+                                                    scrollToMatchOffice(currentMatchIndexOffice);
+                                                }
+                                            });
+
+                                            closeBtn.addEventListener('click', () => {
+                                                searchContainerOffice.style.display = 'none';
+                                            });
+
+                                            searchInputOffice.addEventListener('keyup', (e) => {
+                                                if (e.key === 'Enter') {
+                                                    performSearchOffice();
+                                                }
+                                            });
+
+                                            // Construction de l'interface
+                                            navigationDiv.appendChild(prevBtn);
+                                            navigationDiv.appendChild(nextBtn);
+                                            navigationDiv.appendChild(closeBtn);
+
+                                            searchContainerOffice.appendChild(searchInputOffice);
+                                            searchContainerOffice.appendChild(navigationDiv);
+                                            searchContainerOffice.appendChild(searchResultsOffice);
+                                            document.body.appendChild(searchContainerOffice);
+
+                                            // Bouton de recherche principal
+                                            const searchBtn = document.getElementById('search-btn-office');
+                                            if (searchBtn) {
+                                                searchBtn.addEventListener('click', () => {
+                                                    searchContainerOffice.style.display = searchContainerOffice.style.display === 'block' ? 'none' : 'block';
+                                                    if (searchContainerOffice.style.display === 'block') {
+                                                        searchInputOffice.focus();
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        // Fonction pour effectuer la recherche dans les documents Office
+                                        async function performSearchOffice() {
+                                            if (!pdfDocOffice) {
+                                                // Essayer d'obtenir l'instance du PDF
+                                                await getPdfDocOffice();
+                                                if (!pdfDocOffice) return;
+                                            }
+
+                                            const searchTerm = searchInputOffice.value.trim();
+                                            if (!searchTerm) {
+                                                searchResultsOffice.textContent = '';
+                                                return;
+                                            }
+
+                                            allMatchesOffice = [];
+                                            currentMatchIndexOffice = -1;
+
+                                            // Effectuer la recherche dans chaque page
+                                            for (let pageNum = 1; pageNum <= pdfDocOffice.numPages; pageNum++) {
+                                                const page = await pdfDocOffice.getPage(pageNum);
+                                                const textContent = await page.getTextContent();
+                                                const items = textContent.items;
+                                                let allText = '';
+
+                                                for (let i = 0; i < items.length; i++) {
+                                                    allText += items[i].str;
+                                                }
+
+                                                // Chercher le terme dans le texte
+                                                const regex = new RegExp(searchTerm, 'gi');
+                                                let match;
+                                                while ((match = regex.exec(allText)) !== null) {
+                                                    allMatchesOffice.push({
+                                                        pageNum: pageNum,
+                                                        index: match.index,
+                                                        text: match[0],
+                                                        originalText: allText
+                                                    });
+                                                }
+                                            }
+
+                                            // Afficher les résultats
+                                            if (allMatchesOffice.length > 0) {
+                                                searchResultsOffice.textContent = `Trouvé ${allMatchesOffice.length} résultat(s)`;
+                                                currentMatchIndexOffice = 0;
+                                                scrollToMatchOffice(0);
+                                            } else {
+                                                searchResultsOffice.textContent = 'Aucun résultat trouvé';
+                                            }
+                                        }
+
+                                        // Fonction pour aller à un résultat spécifique dans les documents Office
+                                        function scrollToMatchOffice(index) {
+                                            if (index < 0 || index >= allMatchesOffice.length) return;
+
+                                            const match = allMatchesOffice[index];
+                                            searchResultsOffice.textContent = `Résultat ${index + 1} sur ${allMatchesOffice.length}`;
+
+                                            // Trouver la page correspondante et la faire défiler
+                                            const canvas = document.querySelectorAll('#pdf-pages-container-office canvas')[match.pageNum - 1];
+                                            if (canvas) {
+                                                canvas.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                            }
+                                        }
+
+                                        // Initialiser l'interface de recherche pour les documents Office
+                                        createSearchInterfaceOffice();
+                                    });
+                                }
+                            })();
+                        </script>
+                        
                     @else
                         {{-- ❌ Format non reconnu --}}
                         <div
