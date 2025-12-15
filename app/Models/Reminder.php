@@ -27,6 +27,8 @@ class Reminder extends Model
         'user_id',
         'is_active',
         'is_completed',
+        'is_notified',      // NOUVEAU
+        'notified_at',      // NOUVEAU
         'email_sent_at',
     ];
 
@@ -37,9 +39,11 @@ class Reminder extends Model
      */
     protected $casts = [
         'reminder_date' => 'date',
-        'reminder_time' => 'string',  // Utiliser string au lieu de datetime:H:i pour éviter les conversions indésirables
+        'reminder_time' => 'string',
         'is_active' => 'boolean',
         'is_completed' => 'boolean',
+        'is_notified' => 'boolean',     // NOUVEAU
+        'notified_at' => 'datetime',    // NOUVEAU
         'email_sent_at' => 'datetime',
     ];
 
@@ -48,7 +52,6 @@ class Reminder extends Model
      */
     public function getIsCompletedAttribute()
     {
-        // Accéder directement à la propriété ou la colonne de la base de données
         return (bool) ($this->attributes['is_completed'] ?? false);
     }
 
@@ -90,6 +93,14 @@ class Reminder extends Model
     public function scopeIncomplete($query)
     {
         return $query->where('is_completed', false);
+    }
+
+    /**
+     * Scope to get unnotified reminders only. (NOUVEAU)
+     */
+    public function scopeUnnotified($query)
+    {
+        return $query->where('is_notified', false);
     }
 
     /**
@@ -159,7 +170,7 @@ class Reminder extends Model
     }
 
     /**
-     * Scope to get overdue reminders.
+     * Scope to get overdue reminders (NOUVEAU - amélioré).
      */
     public function scopeOverdue($query)
     {
@@ -167,22 +178,38 @@ class Reminder extends Model
             $query->where('reminder_date', '<', now()->toDateString())
                 ->orWhere(function ($query) {
                     $query->where('reminder_date', now()->toDateString())
-                          ->where('reminder_time', '<', now()->toTimeString());
+                          ->where('reminder_time', '<=', now()->toTimeString());
                 });
         })
         ->where('is_completed', false);
     }
 
-
     /**
-     * Get time remaining until reminder
+     * Scope pour les rappels à notifier (arrivés mais non lus) - NOUVEAU
      */
+    public function scopePendingNotification($query)
+    {
+        $now = Carbon::now();
+
+        return $query->where('is_active', true)
+            ->where('is_completed', false)
+            ->where('is_notified', false)
+            ->where(function ($q) use ($now) {
+                // Rappels dont la date est passée
+                $q->where('reminder_date', '<', $now->toDateString())
+                    // OU rappels d'aujourd'hui dont l'heure est passée
+                    ->orWhere(function ($subQ) use ($now) {
+                        $subQ->where('reminder_date', $now->toDateString())
+                             ->where('reminder_time', '<=', $now->toTimeString());
+                    });
+            });
+    }
+
     /**
      * Get time remaining until reminder
      */
     public function getTimeRemainingAttribute()
     {
-        // Assurez-vous que reminder_date et reminder_time sont des objets Carbon
         $reminderDate = $this->reminder_date instanceof \Carbon\Carbon ? $this->reminder_date->copy() : \Carbon\Carbon::parse($this->reminder_date);
         $reminderTime = $this->reminder_time instanceof \Carbon\Carbon ? $this->reminder_time->copy() : \Carbon\Carbon::parse($this->reminder_time);
 
@@ -194,13 +221,13 @@ class Reminder extends Model
 
                 if ($this->is_completed) {
                     return ['status' => 'Terminé', 'class' => 'text-gray-600'];
-                } elseif ($diffInSeconds > 600) { // Plus de 10 minutes (600 secondes)
+                } elseif ($diffInSeconds > 600) {
                     return ['status' => 'Pas encore arrivé', 'class' => 'text-green-600'];
-                } elseif ($diffInSeconds > 0) { // Entre 0 et 10 minutes
+                } elseif ($diffInSeconds > 0) {
                     return ['status' => 'moins de ' . ceil($diffInSeconds / 60) . ' min', 'class' => 'text-yellow-600 animate-pulse'];
-                } elseif ($diffInSeconds >= -600) { // Arrivé ou en retard de moins de 10 minutes
+                } elseif ($diffInSeconds >= -600) {
                     return ['status' => 'Arrivé', 'class' => 'text-red-600 font-bold'];
-                } else { // En retard de plus de 10 minutes
+                } else {
                     return ['status' => 'déja passé', 'class' => 'text-red-800'];
                 }
             } catch (\Exception $e) {
@@ -219,7 +246,6 @@ class Reminder extends Model
             return false;
         }
 
-        // Assurez-vous que reminder_date et reminder_time sont des objets Carbon
         $reminderDate = $this->reminder_date instanceof \Carbon\Carbon ? $this->reminder_date->copy() : \Carbon\Carbon::parse($this->reminder_date);
         $reminderTime = $this->reminder_time instanceof \Carbon\Carbon ? $this->reminder_time->copy() : \Carbon\Carbon::parse($this->reminder_time);
 
@@ -238,7 +264,6 @@ class Reminder extends Model
     {
         if ($this->reminder_date && $this->reminder_time) {
             try {
-                // Convertir les valeurs en chaînes au cas où elles soient des objets
                 $dateValue = $this->reminder_date;
                 $timeValue = $this->reminder_time;
 
@@ -250,11 +275,9 @@ class Reminder extends Model
                     $timeValue = $timeValue->format('H:i:s');
                 }
 
-                // S'assurer que les valeurs sont des chaînes
                 $dateValue = (string)$dateValue;
                 $timeValue = (string)$timeValue;
 
-                // Vérifier que les formats sont corrects
                 if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateValue) &&
                     preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $timeValue)) {
 
@@ -263,7 +286,7 @@ class Reminder extends Model
                     return $datetime->format('d/m/Y H:i');
                 }
             } catch (\Exception $e) {
-                // Ne pas afficher l'erreur pour éviter les erreurs d'affichage
+                // Ne pas afficher l'erreur
             }
         }
         return 'Date invalide';
@@ -277,20 +300,19 @@ class Reminder extends Model
         parent::boot();
 
         static::updating(function ($reminder) {
-            // Vérifier si la date ou l'heure du rappel a changé
             if ($reminder->isDirty(['reminder_date', 'reminder_time'])) {
-                // Réinitialiser email_sent_at pour que la notification puisse être envoyée à nouveau
                 $reminder->email_sent_at = null;
+                // Réinitialiser is_notified si la date/heure change
+                $reminder->is_notified = false;
+                $reminder->notified_at = null;
             }
         });
 
         static::created(function ($reminder) {
-            // Créer un job différé pour envoyer l'email au moment du rappel
             $reminder->scheduleReminderEmail();
         });
 
         static::updated(function ($reminder) {
-            // Si la date ou l'heure a été modifiée, créer un nouveau job différé
             if ($reminder->isDirty(['reminder_date', 'reminder_time'])) {
                 $reminder->rescheduleReminderEmail();
             }
@@ -302,18 +324,14 @@ class Reminder extends Model
      */
     public function scheduleReminderEmail()
     {
-        // Ne planifier l'email que si le rappel est actif et non complété
         if (!$this->is_active || $this->is_completed) {
             return;
         }
 
-        // Vérifier que la date et l'heure sont définies
         if (!$this->reminder_date || !$this->reminder_time) {
             return;
         }
 
-        // Calculer la date et l'heure complète du rappel
-        // Gérer correctement la date et l'heure qui peuvent être des objets Carbon ou des chaînes
         $date = $this->reminder_date;
         $time = $this->reminder_time;
 
@@ -323,20 +341,16 @@ class Reminder extends Model
 
         if ($time instanceof Carbon) {
             $time = $time->format('H:i:s');
-        } elseif (is_string($time) && strlen($time) === 5) { // Si format H:i
-            $time .= ':00'; // Ajouter les secondes
+        } elseif (is_string($time) && strlen($time) === 5) {
+            $time .= ':00';
         }
 
         $reminderDateTime = Carbon::parse("{$date} {$time}");
-
-        // Envoyer l'email 10 minutes avant le rappel
         $sendTime = $reminderDateTime->subMinutes(10);
 
-        // Ne planifier que si la date d'envoi est dans le futur
         if ($sendTime->isFuture()) {
             SendReminderEmail::dispatch($this->id)->onQueue('default')->delay($sendTime);
         } else {
-            // Si la date est dans le passé, envoyer immédiatement
             SendReminderEmail::dispatch($this->id)->onQueue('default');
         }
     }
@@ -346,8 +360,17 @@ class Reminder extends Model
      */
     public function rescheduleReminderEmail()
     {
-        // Annuler les jobs existants pour ce rappel (nécessite une implémentation spécifique)
-        // Pour l'instant, nous allons simplement planifier un nouveau job
         $this->scheduleReminderEmail();
+    }
+
+    /**
+     * Marquer le rappel comme lu/notifié - NOUVEAU
+     */
+    public function markAsNotified()
+    {
+        $this->update([
+            'is_notified' => true,
+            'notified_at' => Carbon::now()
+        ]);
     }
 }

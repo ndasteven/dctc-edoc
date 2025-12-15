@@ -163,6 +163,18 @@
                                                 <div class="tooltip-arrow" data-popper-arrow></div>
                                             </div>
                                         @endif
+                                        
+                                        @if ($reminder->folder_id)
+                                            <a href="/folders/{{ $reminder->folder->id }}"
+                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                Voir
+                                            </a>
+                                        @else
+                                            <a href="/pdf/{{ $reminder->document->id }}"
+                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                Voir
+                                            </a>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
